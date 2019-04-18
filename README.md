@@ -56,6 +56,22 @@ Running migrations:
   Applying sessions.0001_initial... OK
 ```
 
+To create django superuser account:
+```bash
+docker-compose run web python manage.py createsuperuser
+```
+
+At the end it should look like that (if not - again - please handle with this)
+
+```bash
+Starting pytajnix_db_1 ... done
+Username (leave blank to use 'root'): root
+Email address: email@gmail.com
+Password: 
+Password (again): 
+Superuser created successfully.
+```
+
 At the end finally you are ready to start working. 
 
 In order to start the app run the following command:
