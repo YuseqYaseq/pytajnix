@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="jumbotron">
+  <h1 class="display-4">Moderator Panel</h1>
+  <p class="lead">This is a simple moderator panel</p>
+  <hr class="my-4">
+  <p>Pytajnix is future of humanity</p>
+  <p class="lead">
+    <a class="btn btn-primary btn-lg" href="#" role="button">click!</a>
+  </p>
+</div>
+
+<div class="album pt-3 py-3">
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% for q in questions %}
+    <div class="card mb-3 shadow-sm" style="cursor: pointer;">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-2">
+          </div>
+          <div class="col-md-5">
+            <p class="card-text">{{ q.text }}</p>
+            <p class="card-text">{{ q.tags }}</p>
+          </div>
+          <div class="col-md-5">
+            <p class="card-text text-muted">{{a.get_skill_level_display}}</p>
+            
+              <a href='/application'>
+              <button class="btn btn-dark btn-lg btn-block">
+                 VOTE
+              </button>
+              </a>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
