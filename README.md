@@ -17,6 +17,11 @@ In order to set up the project you have to hold the following prerequisites:
 #### How to make it running
 __Make project directory your current directory__
 
+Set up executable rights:
+```bash
+chmod ugo+x start.sh
+```
+
 At the beginning download/build the docker images:
 ```bash
 docker-compose build
