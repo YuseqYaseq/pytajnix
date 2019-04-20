@@ -84,6 +84,9 @@ In order to start the app run the following command:
 docker-compose up
 ```
 
+At the port 8081 there is HTTP admin panel for database in order to make
+the development easier.
+
 ### Golden rules
 
 * settings.py is only present to ease the development. __UNDER NO CIRCUMSTANCES
