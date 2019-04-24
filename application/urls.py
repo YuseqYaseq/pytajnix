@@ -9,8 +9,7 @@ urlpatterns = [
     path('', views.home, name='home'),
 
     # lecturer panel
-    #path('lecturer/', views.lecturer_panel, name='lecturer_panel'),
-    path('lecturer/<int:lecture_id>', views.lecturer_panel, name='room'),
+    path('lecturer/<int:lecture_id>', views.lecturer_panel, name='lecturer_panel'),
 
     #login
     path('login/', views.user_login, name='user_login'),
