@@ -10,7 +10,7 @@ urlpatterns = [
 
     # lecturer panel
     #path('lecturer/', views.lecturer_panel, name='lecturer_panel'),
-    url(r'^(?P<room_name>[^/]+)/$', views.lecturer_panel, name='room'),
+    path('lecturer/<int:lecture_id>', views.lecturer_panel, name='room'),
 
     #login
     path('login/', views.user_login, name='user_login'),

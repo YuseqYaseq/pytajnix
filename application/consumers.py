@@ -1,12 +1,14 @@
 # application/consumers.py
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
-from asgiref.sync import async_to_sync
+
+from application.models import Question
+
 
 class LecturerConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.lecture_name = self.scope['url_route']['kwargs']['lecture_name']
-        self.lecture_group_name = 'chat_%s' % self.lecture_name
+        self.lecture_group_name = 'lecture_%s' % self.lecture_name
 
         # Join room group
         await self.channel_layer.group_add(
@@ -24,22 +26,76 @@ class LecturerConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+        if text_data_json['type'] == 'question_msg':
+            question = text_data_json['question']
+            tags = text_data_json['tags']
 
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.lecture_group_name,
-            {
-                'type': 'chat_message',
-                'message': message
-            }
-        )
+            # persist message
+            Question.
 
-    # Receive message from room group
-    async def chat_message(self, event):
-        message = event['message']
+            # Send message to room group
+            await self.channel_layer.group_send(
+                self.lecture_group_name,
+                {
+                    'type': 'question_msg',
+                    'question': question,
+                    'tags': tags
+                }
+            )
+        else:
+            title = text_data_json['title']
+            text = text_data_json['text']
+
+            # Send message to room group
+            await self.channel_layer.group_send(
+                self.lecture_group_name,
+                {
+                    'type': 'direct_msg',
+                    'title': title,
+                    'text': text
+                }
+            )
+
+    # Receive question from audience
+    async def question_msg(self, event):
+        question = event['question']
+        tags = event['tags']
 
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
-            'message': message
+            'type': 'question_msg',
+            'question': question,
+            'tags': tags
         }))
+
+    # Receive direct message from audience
+    async def direct_msg(self, event):
+        title = event['title']
+        text = event['text']
+
+        await self.send(text_data=json.dumps({
+            'type': 'direct_msg',
+            'title': title,
+            'text': text,
+        }))
+
+class ModeratorConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+
+    async def disconnect(self, code):
+        pass
+
+    async def receive(self, data):
+        pass
+
+
+class UserConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+
+    async def disconnect(self, code):
+        pass
+
+    async def receive(self, data):
+        pass
