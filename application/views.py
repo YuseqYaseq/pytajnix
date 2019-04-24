@@ -38,8 +38,15 @@ def lecturer_panel(request, lecture_id):
 
 
 @login_required(login_url="application:signup")
-def user_panel(request):
-    return None
+def user_panel(request, lecture_id):
+    template = loader.get_template('application/lecturer_panel.html')
+    context = {
+        'direct_messages': DirectMessage.objects.filter(receiver=request.user.id),
+        'questions': Question.objects.filter(event=lecture_id),
+        'lecture_id': lecture_id,
+        'allow_direct_questions': True,
+    }
+    return HttpResponse(template.render(context, request))
 
 
 def user_login(request):

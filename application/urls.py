@@ -11,6 +11,9 @@ urlpatterns = [
     # lecturer panel
     path('lecturer/<int:lecture_id>', views.lecturer_panel, name='lecturer_panel'),
 
+    # user panel
+    path('user/<int:lecture_id>', views.user_panel, name='user_panel'),
+
     #login
     path('login/', views.user_login, name='user_login'),
     
