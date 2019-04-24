@@ -26,8 +26,14 @@ def mod_panel(request):
 
 
 @login_required(login_url="application:signup")
-def lecturer_panel(request):
-    return None
+def lecturer_panel(request, room_name):
+    template = loader.get_template('application/lecturer_panel.html')
+    context = {
+        'lectures': Lecture.objects.all(),
+        'questions': Question.objects.all(),
+        'room_name': room_name
+    }
+    return HttpResponse(template.render(context, request))
 
 
 @login_required(login_url="application:signup")

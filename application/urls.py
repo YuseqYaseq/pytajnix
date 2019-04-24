@@ -1,3 +1,5 @@
+from django.conf.urls import url
+
 from . import views
 from django.urls import path
 
@@ -5,6 +7,10 @@ app_name = 'application'
 urlpatterns = [
     #main view
     path('', views.home, name='home'),
+
+    # lecturer panel
+    #path('lecturer/', views.lecturer_panel, name='lecturer_panel'),
+    url(r'^(?P<room_name>[^/]+)/$', views.lecturer_panel, name='room'),
 
     #login
     path('login/', views.user_login, name='user_login'),
