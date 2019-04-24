@@ -31,7 +31,7 @@ class LecturerConsumer(AsyncWebsocketConsumer):
             tags = text_data_json['tags']
 
             # persist message
-            Question.
+            # Question.
 
             # Send message to room group
             await self.channel_layer.group_send(
