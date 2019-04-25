@@ -13,16 +13,21 @@ from django.urls import reverse
 @login_required(login_url="application:signup")
 def home(request):
     template = loader.get_template('application/home.html')
-    context={
-        'lectures' : Lecture.objects.all(),
-        'questions' : Question.objects.all(),
+    context = {
+        'lectures': Lecture.objects.all(),
+        'questions': Question.objects.all(),
     }
     return HttpResponse(template.render(context, request))
 
 
 @login_required(login_url="application:signup")
 def mod_panel(request):
-    return None
+    template = loader.get_template('application/mod_panel.html')
+    context = {
+        'lectures': Lecture.objects.all(),
+        'questions': Question.objects.all(),
+    }
+    return HttpResponse(template.render(context, request))
 
 
 @login_required(login_url="application:signup")

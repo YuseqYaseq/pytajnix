@@ -14,4 +14,7 @@ urlpatterns = [
     
     #logout
     path('lout/', views.user_logout, name='user_logout'),
+
+    #moderator_panel
+    path('moderator/', views.mod_panel, name='mod_panel')
 ]
