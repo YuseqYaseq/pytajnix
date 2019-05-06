@@ -2,16 +2,6 @@
 {% load static %}
 {% block content %}
 
-<div class="jumbotron">
-  <h1 class="display-4">User Panel</h1>
-  <p class="lead">This is a simple user panel</p>
-  <hr class="my-4">
-  <p>Pytajnix is future of humanity</p>
-  <p class="lead">
-    <a class="btn btn-primary btn-lg" href="#" role="button">click!</a>
-  </p>
-</div>
-
 <div class="album pt-3 py-3">
     {% if error %}
     <div class="alert alert-danger" role="alert">
@@ -19,62 +9,63 @@
     </div>
     {% endif %}
 
-    {% for q in questions %}
-    <div class="card mb-3 shadow-sm" style="cursor: pointer;">
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-2">
-          </div>
-          <div class="col-md-5">
-            <p class="card-text">{{ q.text }}</p>
-            <p class="card-text">{{ q.tags }}</p>
-          </div>
-          <div class="col-md-5">
-            <p class="card-text text-muted">{{a.get_skill_level_display}}</p>
-            
-              <a href='/application'>
-              <button class="btn btn-dark btn-lg btn-block">
-                 VOTE
-              </button>
-              </a>
-            
-          </div>
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+          <h1 style="text-align:center;">LECTURE {{lecture_id}}</h1>
+          <p class="lead" style="text-align:center;">User panel</p>
         </div>
       </div>
-    </div>
-    {% endfor %}
-</div>
 
-<table id="questions" style="width:67%; float: left;">
-    <tr>
-        <th>Question</th>
-        <th>Tags</th>
-    </tr>
-    {%  for question in questions %}
+    <h2>PUBLIC QUESTIONS</h2>
+    <table id="questions" class="table table-sm">
         <tr>
-            <th>{{ question.text }}</th>
-            <th>{{ question.tags }}</th>
+            <th>Question</th>
+            <th>Tags</th>
         </tr>
-    {% endfor %}
-</table>
-{% if allow_direct_questions %}
-    <table id="direct-messages" style="width:33%">
+        {%  for question in questions %}
+            <tr>
+                <th>{{ question.text }}</th>
+                <th>{{ question.tags }}</th>
+            </tr>
+        {% endfor %}
+    </table>
+    
+    {% if allow_direct_questions %}
+    <h2>PRIVATE QUESTIONS</h2>
+    <table id="direct-messages" class="table table-sm">
         <tr>
             <th>Title</th>
             <th>Text</th>
         </tr>
         {% for direct_message in direct_messages %}
-            <tr>
-                <th>{{ direct_message }}</th>
-            </tr>
+        <tr>
+            <th>{{ direct_message }}</th>
+        </tr>
         {% endfor %}
-    </table>
-{% endif %}
+        </table>
+    {% endif %}
+<br><br>
+    <hr />
+    <div class="justify-content-right">
+    <h2>ASK QUESTION</h2>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="basic-addon1">QUESTION</span>
+        </div>
+        <input id="question-input" type="text" size="50">
+      </div>
 
-<input id="question-input" type="text" size="50"/><br/>
-<input id="question-tags-input" type="text" size="50"/><br/>
-<input id="question-submit" type="button" value="Send"/>
-<input id="message-submit" type="button" value="Send private"/>
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="basic-addon1">TAGS</span>
+        </div>
+        <input id="question-tags-input" type="text" size="50">
+      </div>
+
+<br/>
+<input id="question-submit" type="button" class="btn btn-primary" value="Send"/>
+<input id="message-submit" type="button"  class="btn btn-secondary" value="Send private"/>
+</div>
 <script>
     var lecture_id = {{ lecture_id }};
 
