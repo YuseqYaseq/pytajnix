@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import channels
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,7 +31,19 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+ASGI_APPLICATION = "pytajnix.routing.app"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('mq', 6379)],
+        }
+    }
+}
+
 INSTALLED_APPS = [
+    'channels',
     'application.apps.ApplicationConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -79,6 +92,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
         'USER': 'postgres',
+        'PASSWORD': 'example',
         'HOST': 'db',
         'PORT': 5432,
     }

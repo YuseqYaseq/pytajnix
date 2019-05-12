@@ -17,6 +17,11 @@ In order to set up the project you have to hold the following prerequisites:
 #### How to make it running
 __Make project directory your current directory__
 
+Set up executable rights:
+```bash
+chmod ugo+x start.sh
+```
+
 At the beginning download/build the docker images:
 ```bash
 docker-compose build
@@ -78,6 +83,9 @@ In order to start the app run the following command:
 ```bash
 docker-compose up
 ```
+
+At the port 8081 there is HTTP admin panel for database in order to make
+the development easier.
 
 ### Golden rules
 
