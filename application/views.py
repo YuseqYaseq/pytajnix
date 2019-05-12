@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
 from django.contrib.auth.models import User
-from .models import Lecture, Question
+from .models import Lecture, Question, DirectMessage
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth
 from .forms import LoginForm, RegisterForm
@@ -31,13 +31,27 @@ def mod_panel(request):
 
 
 @login_required(login_url="application:signup")
-def lecturer_panel(request):
-    return None
+def lecturer_panel(request, lecture_id):
+    template = loader.get_template('application/lecturer_panel.html')
+    context = {
+        'direct_messages': DirectMessage.objects.filter(receiver=request.user.id),
+        'questions': Question.objects.filter(event=lecture_id),
+        'lecture_id': lecture_id,
+        'allow_direct_questions': True,
+    }
+    return HttpResponse(template.render(context, request))
 
 
 @login_required(login_url="application:signup")
-def user_panel(request):
-    return None
+def user_panel(request, lecture_id):
+    template = loader.get_template('application/lecturer_panel.html')
+    context = {
+        'direct_messages': DirectMessage.objects.filter(receiver=request.user.id),
+        'questions': Question.objects.filter(event=lecture_id),
+        'lecture_id': lecture_id,
+        'allow_direct_questions': True,
+    }
+    return HttpResponse(template.render(context, request))
 
 
 def user_login(request):
