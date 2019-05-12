@@ -30,6 +30,7 @@ class Lecture(models.Model):
     title = models.CharField(max_length=150)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    moderated = models.BooleanField(default=False)
     participants = models.ManyToManyField(Participant, related_name='%(class)s_participants', blank=True)
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, related_name='%(class)s_location')
 
@@ -87,6 +88,7 @@ class Moderator(models.Model):
         for lecture in lectures:
             self.add_lecture(lecture, save=False)
         self.save()
+
 
 class Question(models.Model):
     text = models.CharField(max_length=300)
