@@ -14,6 +14,9 @@ urlpatterns = [
     # user panel
     path('user/<int:lecture_id>', views.user_panel, name='user_panel'),
 
+    # moderator_panel
+    path('moderator/<int:lecture_id>', views.mod_panel, name='mod_panel'),
+
     #login
     path('login/', views.user_login, name='user_login'),
     
@@ -22,7 +25,4 @@ urlpatterns = [
     
     #logout
     path('lout/', views.user_logout, name='user_logout'),
-
-    #moderator_panel
-    path('moderator/', views.mod_panel, name='mod_panel')
 ]
