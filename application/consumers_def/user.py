@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 
 from application.models import Lecture, DirectMessage
 from .common import *
+from django.utils import timezone
 
 
 class UserConsumer(AsyncWebsocketConsumer):
@@ -75,7 +76,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             if not creator_entity:
                 raise ValueError('Unknown user')
             creator_entity = creator_entity.first()
-            if lecture.lecturer_lectures:
+            if lecture.directmessages_receiver:
                 receiver = lecture.lecturer_lectures.first()
             else:
                 receiver = None
@@ -84,6 +85,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             message.creator = creator_entity
             message.title = title
             message.text = text
+            message.date_time = timezone.now()
             message.receiver = receiver
             message.save()
 

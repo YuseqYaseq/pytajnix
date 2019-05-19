@@ -60,7 +60,7 @@ def lecturer_panel_lecture(request, lecture_id):
         return HttpResponse('Unauthorized', status=401)
     template = loader.get_template('application/lecturer_panel_lecture.html')
     context = {
-        'direct_messages': DirectMessage.objects.filter(receiver=request.user.id),
+        'direct_messages': list(DirectMessage.objects.filter(receiver=lecturer.id, event_id=lecture_id)),
         'questions': Question.objects.filter(event=lecture_id),
         'lecture_id': lecture_id,
         'allow_direct_questions': True,

@@ -38,9 +38,14 @@
         <th>Text</th>
     </tr>
     {% for direct_message in direct_messages %}
-    <tr>
-        <th>{{ direct_message }}</th>
-    </tr>
+        <tr>
+            <td>
+                {{ direct_message.title }}
+            </td>
+            <td>
+                {{ direct_message.text }}
+            </td>
+        </tr>
     {% endfor %}
     </table>
 {% endif %}

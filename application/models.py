@@ -96,8 +96,8 @@ class Question(models.Model):
     text = models.CharField(max_length=300)
     tags = models.CharField(max_length=200)
     approved = models.BooleanField(default=False)
-    creator = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, related_name='%(class)s_creator')
-    voters = models.ManyToManyField(Participant, related_name='%(class)s_voters', through='QuestionVote', blank=True)
+    creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_creator')
+    voters = models.ManyToManyField(User, related_name='%(class)s_voters', through='QuestionVote', blank=True)
     event = models.ForeignKey(Lecture, on_delete=models.SET_NULL, null=True)
 
     class CannotAddVote(Exception):
@@ -131,7 +131,7 @@ class Question(models.Model):
 class QuestionVote(models.Model):
     value = models.IntegerField(validators=[MaxValueValidator(1), MinValueValidator(-1)])
     question = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, related_name='%(class)s_question')
-    voter = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, related_name='%(class)s_voter')
+    voter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_voter')
 
 
 class DirectMessage(models.Model):
