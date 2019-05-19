@@ -76,8 +76,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             if not creator_entity:
                 raise ValueError('Unknown user')
             creator_entity = creator_entity.first()
-            if lecture.directmessages_receiver:
-                receiver = lecture.lecturer_lectures.first()
+            if lecture.lecturer_lecturers:
+                receiver = lecture.lecturer_lecturers.first()
             else:
                 receiver = None
             message = DirectMessage()

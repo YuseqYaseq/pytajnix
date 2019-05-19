@@ -59,7 +59,7 @@ class Lecturer(models.Model):
     title = models.CharField(max_length=50, null=True)
     name = models.CharField(max_length=120, null=True)
     surname = models.CharField(max_length=120, null=True)
-    lectures = models.ManyToManyField(Lecture, related_name='%(class)s_lectures', blank=True)
+    lectures = models.ManyToManyField(Lecture, related_name='%(class)s_lecturers', blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='lecturer')
 
     def add_lecture(self, lecture, save=True):
