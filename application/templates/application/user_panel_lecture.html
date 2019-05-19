@@ -82,12 +82,24 @@
             console.log(data);
             document.querySelector('#questions').innerHTML +=
                 "<tr><th>" + question + "</th><th>" + tags + "</th></tr>";
-        } else if(data['type'] === 'msq_private'){
+        } else if(data['type'] === 'msg_private'){
             var title = data['title'];
             var text = data['text'];
             console.log(data);
             document.querySelector('#direct-messages').innerHTML +=
                 "<tr><th>" + title + "</th><th>" + text + "</th></tr>";
+        } else if(data['type'] === 'msg_vote') {
+            var value = data['value'];
+            var question_id = data['question_id'];
+            console.log("msg vote")
+        } else if(data['type'] === 'msg_edit') {
+
+            console.log("msg edit");
+        } else if(data['type'] === 'msg_delete') {
+            var question_id = data['question_id'];
+            console.log("msg delete");
+        } else {
+            console.warn("Unknown message received: " + data['type']);
         }
 
     };

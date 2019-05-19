@@ -51,7 +51,7 @@
 {% endif %}
 
 <script>
-    var lecture_id = {{ lecture_id }};
+    var lecture_id = '{{ lecture_id }}';
 
     var chatSocket = new WebSocket(
         'ws://' + window.location.host +
@@ -59,18 +59,26 @@
 
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
-        if(data['type'] === 'question_msg') {
+        if(data['type'] === 'msg_question') {
             var question = data['question'];
             var tags = data['tags'];
+            var question_id = data['question_id'];
             console.log(data);
             document.querySelector('#questions').innerHTML +=
                 "<tr><th>" + question + "</th><th>" + tags + "</th></tr>";
-        } else {
+        } else if(data['type'] === 'msg_private'){
             var title = data['title'];
             var text = data['text'];
             console.log(data);
             document.querySelector('#direct-messages').innerHTML +=
                 "<tr><th>" + title + "</th><th>" + text + "</th></tr>";
+        } else if(data['type'] === 'msg_approve') {
+            var question = data['question'];
+            var tags = data['tags'];
+            var question_id = data['question_id'];
+            console.log("msg approve")
+        } else {
+            console.warn("Unknown message received: " + data['type']);
         }
 
     };
@@ -79,42 +87,6 @@
         console.error('Socket closed unexpectedly');
     };
 
-    document.querySelector('#question-input').focus();
-    document.querySelector('#question-input').onkeyup = function(e) {
-        if (e.keyCode === 13) {  // enter, return
-            document.querySelector('#question-submit').click();
-        }
-    };
-
-    document.querySelector('#question-submit').onclick = function(e) {
-        var questionInputDom = document.querySelector('#question-input');
-        var tagsInputDom = document.querySelector('#question-tags-input');
-        var question = questionInputDom.value;
-        var tags = tagsInputDom.value;
-        chatSocket.send(JSON.stringify({
-            'type': 'question_msg',
-            'question': question,
-            'tags': tags
-        }));
-
-        questionInputDom.value = '';
-        tagsInputDom.value = '';
-    };
-
-    document.querySelector('#message-submit').onclick = function(e) {
-        var questionInputDom = document.querySelector('#question-input');
-        var tagsInputDom = document.querySelector('#question-tags-input');
-        var title = questionInputDom.value;
-        var text = tagsInputDom.value;
-        chatSocket.send(JSON.stringify({
-            'type': 'direct_msg',
-            'title': title,
-            'text': text
-        }));
-
-        questionInputDom.value = '';
-        tagsInputDom.value = '';
-    };
 </script>
 
 

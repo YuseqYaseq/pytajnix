@@ -35,4 +35,44 @@
     </table>
 </div>
 
+<script>
+    var lecture_id = '{{ lecture_id }}';
+
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/application/moderator/' + lecture_id + '/');
+
+    chatSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        if(data['type'] === 'msg_question') {
+            var question = data['question'];
+            var tags = data['tags'];
+            console.log(data);
+            document.querySelector('#questions').innerHTML +=
+                "<tr><th>" + question + "</th><th>" + tags + "</th></tr>";
+        } else if(data['type'] === 'msg_vote') {
+            var value = data['value'];
+            var question_id = data['question_id'];
+            console.log("msg vote")
+        } else if(data['type'] === 'msg_edit') {
+
+            console.log("msg edit");
+        } else if(data['type'] === 'msg_delete') {
+            var question_id = data['question_id'];
+            console.log("msg delete");
+        } else if(data['type'] === 'msg_approve') {
+            var question_id = data['question_id'];
+            console.log("msg approve");
+        } else {
+            console.warn("Unknown message received: " + data['type']);
+        }
+
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Socket closed unexpectedly');
+    };
+
+</script>
+
 {% endblock %}

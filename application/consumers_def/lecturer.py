@@ -55,11 +55,21 @@ class LecturerConsumer(AsyncWebsocketConsumer):
 
     # Receive private message
     async def msg_private(self, event):
-        title = event['title']
-        text = event['text']
-        print("dupa1")
+        # title = event['title']
+        # text = event['text']
+        # event['type'] = m_private
+        await self.send(text_data=json.dumps(event))
+
+    # Receive question (when moderation is turned off)
+    async def msg_question(self, event):
+        question = event['question']
+        tags = event['tags']
+        question_id = event['question_id']
+
+        # Send message to WebSocket
         await self.send(text_data=json.dumps({
-            'type': m_private,
-            'title': title,
-            'text': text,
+            'type': m_question,
+            'question': question,
+            'question_id': question_id,
+            'tags': tags
         }))
