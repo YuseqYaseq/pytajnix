@@ -1,9 +1,12 @@
+from application.models import Lecture
 from .common import *
 
 
 class ModeratorConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.lecture_name = self.scope['url_route']['kwargs']['lecture_name']
+        if not Lecture.objects.filter(hash=self.lecture_name):
+            raise ValueError('Unknown lecture id.')
         self.approved_msg_gn = approved_question_group_name + self.lecture_name
         self.question_msg_gn = question_group_name + self.lecture_name
 
@@ -49,17 +52,25 @@ class ModeratorConsumer(AsyncWebsocketConsumer):
 
         elif text_data_json['type'] == m_approve:
 
-            # TODO: get question text from db based on question_id
-            question = "blabla"
-            tags = "blabla"
+            question_id = text_data_json['question_id']
+            lecture = Lecture.objects.filter(hash=self.lecture_name).first()
+            question = Question.objects.filter(pk=question_id)
+            if question not in lecture.question_set:
+                raise RuntimeError('Question is not assigned to given lecture')
+            if not question:
+                raise ValueError('Bad question id')
+
+            question = question.first()
+            question.approved = True
+            question.save()
 
             await self.channel_layer.group_send(
                 self.approved_msg_gn,
                 {
                     'type': m_approve,
                     'question_id': text_data_json['question_id'],
-                    'question': question,
-                    'tags': tags,
+                    'question': question.text,
+                    'tags': question.tags,
                 }
             )
 

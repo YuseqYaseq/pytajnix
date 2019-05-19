@@ -18,12 +18,12 @@ class Location(models.Model):
 
 class Participant(models.Model):
     public_nickname = models.CharField(max_length=200, null=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='participant')
 
 
 class Lecture(models.Model):
 
-    RANDOM_HASH_LETTERS = 'abcdefghijklmnopqrstuwyz1234567890!@#$%^&*()-_=+'
+    RANDOM_HASH_LETTERS = 'abcdefghijklmnopqrstuwyz1234567890'
     RANDOM_HASH_LEN = 10
 
     hash = models.CharField(max_length=16, primary_key=True)
@@ -57,8 +57,10 @@ class Lecture(models.Model):
 
 class Lecturer(models.Model):
     title = models.CharField(max_length=50, null=True)
+    name = models.CharField(max_length=120, null=True)
+    surname = models.CharField(max_length=120, null=True)
     lectures = models.ManyToManyField(Lecture, related_name='%(class)s_lectures', blank=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='lecturer')
 
     def add_lecture(self, lecture, save=True):
         self.lectures.add(lecture)
@@ -77,7 +79,7 @@ class Lecturer(models.Model):
 
 class Moderator(models.Model):
     moderated_lectures = models.ManyToManyField(Lecture, related_name='%(class)s_moderated_lectures', blank=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='moderator')
 
     def add_lecture(self, lecture, save=True):
         self.moderated_lectures.add(lecture)

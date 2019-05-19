@@ -2,16 +2,6 @@
 {% load static %}
 {% block content %}
 
-<div class="jumbotron">
-  <h1 class="display-4">Moderator Panel</h1>
-  <p class="lead">This is a simple moderator panel</p>
-  <hr class="my-4">
-  <p>Pytajnix is future of humanity</p>
-  <p class="lead">
-    <a class="btn btn-primary btn-lg" href="#" role="button">click!</a>
-  </p>
-</div>
-
 <div class="album pt-3 py-3">
     {% if error %}
     <div class="alert alert-danger" role="alert">
@@ -19,30 +9,40 @@
     </div>
     {% endif %}
 
-    {% for q in questions %}
-    <div class="card mb-3 shadow-sm" style="cursor: pointer;">
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-2">
-          </div>
-          <div class="col-md-5">
-            <p class="card-text">{{ q.text }}</p>
-            <p class="card-text">{{ q.tags }}</p>
-          </div>
-          <div class="col-md-5">
-            <p class="card-text text-muted">{{a.get_skill_level_display}}</p>
-            
-              <a href='/application'>
-              <button class="btn btn-dark btn-lg btn-block">
-                 VOTE
-              </button>
-              </a>
-            
-          </div>
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+          <h1 style="text-align:center;">MODERATOR PANEL</h1>
+            <h2 style="text-align:center;">{{ moderator_name }}</h2>
+          <p class="lead" style="text-align:center;">Lectures to moderate</p>
         </div>
       </div>
-    </div>
+    <h2>LECTURES</h2>
+<table id="lectures" class="table table-sm">
+    <tr>
+        <th>Title</th>
+        <th>Start time</th>
+        <th>End time</th>
+        <th>Link</th>
+    </tr>
+    {%  for lecture in lectures %}
+        <tr>
+            <td>{{ lecture.title }}</td>
+            <td>{{ lecture.start_time }}</td>
+            <td>{{ lecture.end_time }}</td>
+            <td>
+                <a href='{% url 'application:mod_panel_lecture' lecture_id=lecture.hash %}'>
+                  <button class="btn btn-success">
+                     DETAILS
+                  </button>
+                </a>
+            </td>
+        </tr>
     {% endfor %}
+</table>
+
+
+
 </div>
 
 {% endblock %}
+</html>

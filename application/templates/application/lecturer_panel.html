@@ -11,106 +11,35 @@
 
     <div class="jumbotron jumbotron-fluid">
         <div class="container">
-          <h1 style="text-align:center;">LECTURE {{lecture_id}}</h1>
-          <p class="lead" style="text-align:center;">Lecturer panel</p>
+          <h1 style="text-align:center;">LECTURER PANEL</h1>
+            <h2 style="text-align:center;">{{ lecturer_title }} {{ lecturer_name }}</h2>
+          <p class="lead" style="text-align:center;">Available lectures</p>
         </div>
       </div>
-
-    <h2>PUBLIC QUESTIONS</h2>
-<table id="questions" class="table table-sm">
+    <h2>LECTURES</h2>
+<table id="lectures" class="table table-sm">
     <tr>
-        <th>Question</th>
-        <th>Tags</th>
+        <th>Title</th>
+        <th>Start time</th>
+        <th>End time</th>
+        <th>Link</th>
     </tr>
-    {%  for question in questions %}
+    {%  for lecture in lectures %}
         <tr>
-            <th>{{ question.text }}</th>
-            <th>{{ question.tags }}</th>
+            <td>{{ lecture.title }}</td>
+            <td>{{ lecture.start_time }}</td>
+            <td>{{ lecture.end_time }}</td>
+            <td>
+                <a href='{% url 'application:lecturer_panel_lecture' lecture_id=lecture.hash %}'>
+                  <button class="btn btn-success">
+                     DETAILS
+                  </button>
+                </a>
+            </td>
         </tr>
     {% endfor %}
 </table>
 
-{% if allow_direct_questions %}
-<h2>PRIVATE QUESTIONS</h2>
-<table id="direct-messages" class="table table-sm">
-    <tr>
-        <th>Title</th>
-        <th>Text</th>
-    </tr>
-    {% for direct_message in direct_messages %}
-    <tr>
-        <th>{{ direct_message }}</th>
-    </tr>
-    {% endfor %}
-    </table>
-{% endif %}
-
-<script>
-    var lecture_id = {{ lecture_id }};
-
-    var chatSocket = new WebSocket(
-        'ws://' + window.location.host +
-        '/ws/application/lecturer/' + lecture_id + '/');
-
-    chatSocket.onmessage = function(e) {
-        var data = JSON.parse(e.data);
-        if(data['type'] === 'question_msg') {
-            var question = data['question'];
-            var tags = data['tags'];
-            console.log(data);
-            document.querySelector('#questions').innerHTML +=
-                "<tr><th>" + question + "</th><th>" + tags + "</th></tr>";
-        } else {
-            var title = data['title'];
-            var text = data['text'];
-            console.log(data);
-            document.querySelector('#direct-messages').innerHTML +=
-                "<tr><th>" + title + "</th><th>" + text + "</th></tr>";
-        }
-
-    };
-
-    chatSocket.onclose = function(e) {
-        console.error('Socket closed unexpectedly');
-    };
-
-    document.querySelector('#question-input').focus();
-    document.querySelector('#question-input').onkeyup = function(e) {
-        if (e.keyCode === 13) {  // enter, return
-            document.querySelector('#question-submit').click();
-        }
-    };
-
-    document.querySelector('#question-submit').onclick = function(e) {
-        var questionInputDom = document.querySelector('#question-input');
-        var tagsInputDom = document.querySelector('#question-tags-input');
-        var question = questionInputDom.value;
-        var tags = tagsInputDom.value;
-        chatSocket.send(JSON.stringify({
-            'type': 'question_msg',
-            'question': question,
-            'tags': tags
-        }));
-
-        questionInputDom.value = '';
-        tagsInputDom.value = '';
-    };
-
-    document.querySelector('#message-submit').onclick = function(e) {
-        var questionInputDom = document.querySelector('#question-input');
-        var tagsInputDom = document.querySelector('#question-tags-input');
-        var title = questionInputDom.value;
-        var text = tagsInputDom.value;
-        chatSocket.send(JSON.stringify({
-            'type': 'direct_msg',
-            'title': title,
-            'text': text
-        }));
-
-        questionInputDom.value = '';
-        tagsInputDom.value = '';
-    };
-</script>
 
 
 </div>
