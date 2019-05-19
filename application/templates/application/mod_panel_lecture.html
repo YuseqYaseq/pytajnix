@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="album pt-3 py-3">
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+          <h1 style="text-align:center;">MODERATOR PANEL</h1>
+            <h2 style="text-align:center;">{{ moderator_name }}</h2>
+          <p class="lead" style="text-align:center;">Lectures to moderate</p>
+        </div>
+    </div>
+    <h2>PUBLIC QUESTIONS</h2>
+    <table id="questions" class="table table-sm">
+        <tr>
+            <th>Question</th>
+            <th>Tags</th>
+            <th>Action</th>
+        </tr>
+        {%  for question in questions %}
+            <tr>
+                <td>{{ question.text }}</td>
+                <td>{{ question.tags }}</td>
+                <td>
+                    <button class="btn btn-success">APPROVE</button>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="album pt-3 py-3">
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+          <h1 style="text-align:center;">LECTURE {{lecture_id}}</h1>
+            <h2 style="text-align:center;">{{user_nick}}</h2>
+          <p class="lead" style="text-align:center;">User panel</p>
+        </div>
+      </div>
+
+    <h2>PUBLIC QUESTIONS</h2>
+    <table id="questions" class="table table-sm">
+        <tr>
+            <th>Question</th>
+            <th>Tags</th>
+        </tr>
+        {%  for question in questions %}
+            <tr>
+                <th>{{ question.text }}</th>
+                <th>{{ question.tags }}</th>
+            </tr>
+        {% endfor %}
+    </table>
+    
+    {% if allow_direct_questions %}
+    <h2>PRIVATE QUESTIONS</h2>
+    <table id="direct-messages" class="table table-sm">
+        <tr>
+            <th>Title</th>
+            <th>Text</th>
+        </tr>
+        {% for direct_message in direct_messages %}
+        <tr>
+            <th>{{ direct_message }}</th>
+        </tr>
+        {% endfor %}
+        </table>
+    {% endif %}
+<br><br>
+    <hr />
+    <div class="justify-content-right">
+    <h2>ASK QUESTION</h2>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="basic-addon1">QUESTION</span>
+        </div>
+        <input id="question-input" type="text" size="50">
+      </div>
+
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="basic-addon1">TAGS</span>
+        </div>
+        <input id="question-tags-input" type="text" size="50">
+      </div>
+
+<br/>
+<input id="question-submit" type="button" class="btn btn-primary" value="Send"/>
+<input id="message-submit" type="button"  class="btn btn-secondary" value="Send private"/>
+</div>
+<script>
+    let lecture_id = "{{ lecture_id }}";
+
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/application/lecturer/' + lecture_id + '/');
+
+    chatSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        if(data['type'] === 'question_msg') {
+            var question = data['question'];
+            var tags = data['tags'];
+            console.log(data);
+            document.querySelector('#questions').innerHTML +=
+                "<tr><th>" + question + "</th><th>" + tags + "</th></tr>";
+        } else {
+            var title = data['title'];
+            var text = data['text'];
+            console.log(data);
+            document.querySelector('#direct-messages').innerHTML +=
+                "<tr><th>" + title + "</th><th>" + text + "</th></tr>";
+        }
+
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Socket closed unexpectedly');
+    };
+
+    document.querySelector('#question-input').focus();
+    document.querySelector('#question-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#question-submit').click();
+        }
+    };
+
+    document.querySelector('#question-submit').onclick = function(e) {
+        var questionInputDom = document.querySelector('#question-input');
+        var tagsInputDom = document.querySelector('#question-tags-input');
+        var question = questionInputDom.value;
+        var tags = tagsInputDom.value;
+        chatSocket.send(JSON.stringify({
+            'creator': '{{user_name}}',
+            'type': 'msg_private',
+            'question': question,
+            'tags': tags
+        }));
+
+        questionInputDom.value = '';
+        tagsInputDom.value = '';
+    };
+
+    document.querySelector('#message-submit').onclick = function(e) {
+        var questionInputDom = document.querySelector('#question-input');
+        var tagsInputDom = document.querySelector('#question-tags-input');
+        var title = questionInputDom.value;
+        var text = tagsInputDom.value;
+        chatSocket.send(JSON.stringify({
+            'creator': '{{user_name}}',
+            'type': 'msg_private',
+            'title': title,
+            'text': text
+        }));
+
+        questionInputDom.value = '';
+        tagsInputDom.value = '';
+    };
+</script>
+
+{% endblock %}
