@@ -76,13 +76,13 @@
 
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
-        if(data['type'] === 'question_msg') {
+        if(data['type'] === 'msg_question') {
             var question = data['question'];
             var tags = data['tags'];
             console.log(data);
             document.querySelector('#questions').innerHTML +=
                 "<tr><th>" + question + "</th><th>" + tags + "</th></tr>";
-        } else {
+        } else if(data['type'] === 'msq_private'){
             var title = data['title'];
             var text = data['text'];
             console.log(data);
@@ -110,7 +110,7 @@
         var tags = tagsInputDom.value;
         chatSocket.send(JSON.stringify({
             'creator': '{{user_name}}',
-            'type': 'msg_private',
+            'type': 'msg_question',
             'question': question,
             'tags': tags
         }));
