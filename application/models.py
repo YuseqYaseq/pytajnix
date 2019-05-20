@@ -16,20 +16,24 @@ class Location(models.Model):
         return self.name
 
 
-class Participant(User):
+class Participant(models.Model):
     public_nickname = models.CharField(max_length=200, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='participant')
 
 
 class Lecture(models.Model):
 
-    RANDOM_HASH_LETTERS = 'abcdefghijklmnopqrstuwyz1234567890!@#$%^&*()-_=+'
+    RANDOM_HASH_LETTERS = 'abcdefghijklmnopqrstuwyz1234567890'
     RANDOM_HASH_LEN = 10
 
     hash = models.CharField(max_length=16, primary_key=True)
     title = models.CharField(max_length=150)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    participants = models.ManyToManyField(Participant, related_name='%(class)s_participants')
+    moderated = models.BooleanField(default=False)
+    direct_questions_allowed = models.BooleanField(default=True)
+    closed = models.BooleanField(default=False)
+    participants = models.ManyToManyField(Participant, related_name='%(class)s_participants', blank=True)
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, related_name='%(class)s_location')
 
     def set_random_hash(self):
@@ -53,9 +57,12 @@ class Lecture(models.Model):
         return self.title
 
 
-class Lecturer(User):
+class Lecturer(models.Model):
     title = models.CharField(max_length=50, null=True)
-    lectures = models.ManyToManyField(Lecture, related_name='%(class)s_lectures')
+    name = models.CharField(max_length=120, null=True)
+    surname = models.CharField(max_length=120, null=True)
+    lectures = models.ManyToManyField(Lecture, related_name='%(class)s_lecturers', blank=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='lecturer')
 
     def add_lecture(self, lecture, save=True):
         self.lectures.add(lecture)
@@ -69,11 +76,12 @@ class Lecturer(User):
 
     def __str__(self):
         title = self.title if self.title is not None else ''
-        return '{} {} {}'.format(title, self.first_name, self.last_name)
+        return '{} {} {}'.format(title, self.user.first_name, self.user.last_name)
 
 
-class Moderator(User):
-    moderated_lectures = models.ManyToManyField(Lecture, related_name='%(class)s_moderated_lectures')
+class Moderator(models.Model):
+    moderated_lectures = models.ManyToManyField(Lecture, related_name='%(class)s_moderated_lectures', blank=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='moderator')
 
     def add_lecture(self, lecture, save=True):
         self.moderated_lectures.add(lecture)
@@ -86,17 +94,15 @@ class Moderator(User):
         self.save()
 
 
-class Administrator(User):
-    # to be used in the future
-    pass
-
-
 class Question(models.Model):
     text = models.CharField(max_length=300)
     tags = models.CharField(max_length=200)
-    creator = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, related_name='%(class)s_creator')
-    voters = models.ManyToManyField(Participant, related_name='%(class)s_voters', through='QuestionVote')
+    approved = models.BooleanField(default=False)
+    creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_creator')
+    voters = models.ManyToManyField(User, related_name='%(class)s_voters', through='QuestionVote', blank=True)
     event = models.ForeignKey(Lecture, on_delete=models.SET_NULL, null=True)
+    votes_value = 0
+    user_can_vote = True
 
     class CannotAddVote(Exception):
         pass
@@ -129,7 +135,7 @@ class Question(models.Model):
 class QuestionVote(models.Model):
     value = models.IntegerField(validators=[MaxValueValidator(1), MinValueValidator(-1)])
     question = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, related_name='%(class)s_question')
-    voter = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, related_name='%(class)s_voter')
+    voter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_voter')
 
 
 class DirectMessage(models.Model):

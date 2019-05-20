@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="album pt-3 py-3">
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+          <h1 style="text-align:center;">LECTURE {{lecture_id}}</h1>
+          <p class="lead" style="text-align:center;">Lecturer panel</p>
+        </div>
+      </div>
+
+    <h2>PUBLIC QUESTIONS</h2>
+<table id="questions" class="table table-sm">
+    <tr>
+        <th>Question</th>
+        <th>Tags</th>
+        <th>Votes</th>
+    </tr>
+    {%  for question in questions %}
+        <tr id="row-{{ question.id }}">
+            <td>{{ question.text }}</td>
+            <td>{{ question.tags }}</td>
+            <td class="vote">{{ question.votes_value }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+{% if allow_direct_questions %}
+<h2>PRIVATE QUESTIONS</h2>
+<table id="direct-messages" class="table table-sm">
+    <tr>
+        <th>Title</th>
+        <th>Text</th>
+    </tr>
+    {% for direct_message in direct_messages %}
+        <tr>
+            <td>
+                {{ direct_message.title }}
+            </td>
+            <td>
+                {{ direct_message.text }}
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endif %}
+
+<script>
+    {% load static %}
+    var notification = new Audio('{% static "message.mp3" %}');
+
+    var lecture_id = '{{ lecture_id }}';
+
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/application/lecturer/' + lecture_id + '/');
+
+    chatSocket.onmessage = function(e) {
+        notification.play();
+        var data = JSON.parse(e.data);
+        if(data['type'] === 'msg_approve') {
+            var question = data['question'];
+            var tags = data['tags'];
+            var question_id = data['question_id'];
+            console.log(data);
+            document.querySelector('#questions').innerHTML +=
+                "<tr><td>" + question + "</td><td>" + tags + "</td><td class=\"vote\">0</td></tr>";
+        } else if(data['type'] === 'msg_private'){
+            var title = data['title'];
+            var text = data['text'];
+            console.log(data);
+            document.querySelector('#direct-messages').innerHTML +=
+                "<tr><td>" + title + "</td><td>" + text + "</td></tr>";
+        } else if(data['type'] === 'msg_question') {
+            var question = data['question'];
+            var tags = data['tags'];
+            var question_id = data['question_id'];
+            console.log("msg waiting for approval");
+            document.querySelector('#questions').innerHTML +=
+                "<tr><td>" + question + "</td><td>" + tags + "</td></tr>";
+        } else if(data['type'] === 'msg_vote'){
+           var value = parseInt(data['vote']);
+           var question_id = data['question_id'];
+           var new_val = parseInt(document.querySelector("#row-" + question_id).querySelector(".vote").innerHTML) + value;
+           document.querySelector("#row-" + question_id).querySelector(".vote").innerHTML = new_val;
+           console.log("msg vote")
+        } else {
+            console.warn("Unknown message received: " + data['type']);
+        }
+
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Socket closed unexpectedly');
+    };
+
+</script>
+
+
+</div>
+
+{% endblock %}
+</html>
