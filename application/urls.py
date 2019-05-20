@@ -5,6 +5,9 @@ from django.urls import path
 
 app_name = 'application'
 urlpatterns = [
+
+    path('', views.home, name='home'),
+
     # lecturer panel
     path('lecturer/', views.lecturer_panel, name='lecturer_panel'),
     path('lecturer/<str:lecture_id>', views.lecturer_panel_lecture, name='lecturer_panel_lecture'),
@@ -16,7 +19,8 @@ urlpatterns = [
     # moderator_panel
     path('moderator/', views.mod_panel, name='mod_panel'),
     path('moderator/<str:lecture_id>', views.mod_panel_lecture, name='mod_panel_lecture'),
-
+    path('moderator/<str:lecture_id>/<int:question_id>', views.question_approval, name='approve_question'),
+    path('moderator/close_lecture/<str:lecture_id>', views.lecture_close, name='close_lecture'),
     #login
     path('login/', views.user_login, name='user_login'),
     

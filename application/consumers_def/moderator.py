@@ -5,7 +5,8 @@ from .common import *
 class ModeratorConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.lecture_name = self.scope['url_route']['kwargs']['lecture_name']
-        if not Lecture.objects.filter(hash=self.lecture_name):
+        if not Lecture.objects.filter(hash=self.lecture_name) \
+                or Lecture.objects.filter(hash=self.lecture_name).first().closed:
             raise ValueError('Unknown lecture id.')
         self.approved_msg_gn = approved_question_group_name + self.lecture_name
         self.question_msg_gn = question_group_name + self.lecture_name
@@ -55,10 +56,11 @@ class ModeratorConsumer(AsyncWebsocketConsumer):
             question_id = text_data_json['question_id']
             lecture = Lecture.objects.filter(hash=self.lecture_name).first()
             question = Question.objects.filter(pk=question_id)
-            if question not in lecture.question_set:
-                raise RuntimeError('Question is not assigned to given lecture')
             if not question:
                 raise ValueError('Bad question id')
+            if question.first().event != lecture:
+                raise RuntimeError('Question is not assigned to given lecture')
+
 
             question = question.first()
             question.approved = True

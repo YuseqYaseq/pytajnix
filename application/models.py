@@ -31,6 +31,8 @@ class Lecture(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     moderated = models.BooleanField(default=False)
+    direct_questions_allowed = models.BooleanField(default=True)
+    closed = models.BooleanField(default=False)
     participants = models.ManyToManyField(Participant, related_name='%(class)s_participants', blank=True)
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, related_name='%(class)s_location')
 
@@ -59,7 +61,7 @@ class Lecturer(models.Model):
     title = models.CharField(max_length=50, null=True)
     name = models.CharField(max_length=120, null=True)
     surname = models.CharField(max_length=120, null=True)
-    lectures = models.ManyToManyField(Lecture, related_name='%(class)s_lectures', blank=True)
+    lectures = models.ManyToManyField(Lecture, related_name='%(class)s_lecturers', blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='lecturer')
 
     def add_lecture(self, lecture, save=True):
@@ -96,9 +98,11 @@ class Question(models.Model):
     text = models.CharField(max_length=300)
     tags = models.CharField(max_length=200)
     approved = models.BooleanField(default=False)
-    creator = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, related_name='%(class)s_creator')
-    voters = models.ManyToManyField(Participant, related_name='%(class)s_voters', through='QuestionVote', blank=True)
+    creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_creator')
+    voters = models.ManyToManyField(User, related_name='%(class)s_voters', through='QuestionVote', blank=True)
     event = models.ForeignKey(Lecture, on_delete=models.SET_NULL, null=True)
+    votes_value = 0
+    user_can_vote = True
 
     class CannotAddVote(Exception):
         pass
@@ -131,7 +135,7 @@ class Question(models.Model):
 class QuestionVote(models.Model):
     value = models.IntegerField(validators=[MaxValueValidator(1), MinValueValidator(-1)])
     question = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, related_name='%(class)s_question')
-    voter = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, related_name='%(class)s_voter')
+    voter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='%(class)s_voter')
 
 
 class DirectMessage(models.Model):

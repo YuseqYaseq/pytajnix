@@ -2,16 +2,23 @@ from django.contrib.auth.models import User
 
 from application.models import Lecture, DirectMessage
 from .common import *
+from django.utils import timezone
 
 
 class UserConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.lecture_name = self.scope['url_route']['kwargs']['lecture_name']
-        if not Lecture.objects.filter(hash=self.lecture_name):
+        lectures = Lecture.objects.filter(hash=self.lecture_name)
+        if not lectures :
             raise ValueError('Unknown lecture id.')
         self.private_msg_gn = private_msg_group_name + self.lecture_name
-        self.question_msg_gn = question_group_name + self.lecture_name
-
+        lecture = lectures.first()
+        if lecture.closed:
+            raise ValueError('Lecture already closed.')
+        if lecture.moderated:
+            self.question_msg_gn = question_group_name + self.lecture_name
+        else:
+            self.question_msg_gn = approved_question_group_name + self.lecture_name
         # Join room group
         await self.channel_layer.group_add(
             self.private_msg_gn,
@@ -43,19 +50,22 @@ class UserConsumer(AsyncWebsocketConsumer):
             question = text_data_json['question']
             tags = text_data_json['tags']
             creator = text_data_json['creator']
-
             # persist message
             lecture = Lecture.objects.filter(hash=self.lecture_name).first()
+            if lecture.closed:
+                raise ValueError('Lecture already closed')
             creator_entity = User.objects.filter(username=creator)
             if not creator_entity:
                 raise ValueError('Unknown user')
             creator_entity = creator_entity.first()
             question_entity = Question()
             question_entity.text = question
+            question_entity.tags = tags
             question_entity.approved = not lecture.moderated
             question_entity.creator = creator_entity
             question_entity.event = lecture
             question_entity.save()
+            print( question_entity.id)
             # Send message to room group
             await self.channel_layer.group_send(
                 self.question_msg_gn,
@@ -63,7 +73,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                     'type': m_question,
                     'question': question,
                     'tags': tags,
-                    'question_id': question_entity.pk
+                    'question_id': question_entity.id
                 }
             )
         elif text_data_json['type'] == m_private:
@@ -71,12 +81,16 @@ class UserConsumer(AsyncWebsocketConsumer):
             text = text_data_json['text']
             creator = text_data_json['creator']
             lecture = Lecture.objects.filter(hash=self.lecture_name).first()
+            if lecture.closed:
+                raise ValueError('Lecture already closed')
             creator_entity = User.objects.filter(username=creator)
             if not creator_entity:
                 raise ValueError('Unknown user')
+            if lecture.direct_questions_allowed is False:
+                raise ValueError('Direct messages not allowed')
             creator_entity = creator_entity.first()
-            if lecture.lecturer_lectures:
-                receiver = lecture.lecturer_lectures.first()
+            if lecture.lecturer_lecturers:
+                receiver = lecture.lecturer_lecturers.first()
             else:
                 receiver = None
             message = DirectMessage()
@@ -84,6 +98,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             message.creator = creator_entity
             message.title = title
             message.text = text
+            message.date_time = timezone.now()
             message.receiver = receiver
             message.save()
 
@@ -107,12 +122,14 @@ class UserConsumer(AsyncWebsocketConsumer):
                 raise ValueError('Unknown user')
             creator_entity = creator_entity.first()
             lecture = Lecture.objects.filter(hash=self.lecture_name).first()
+            if lecture.closed:
+                raise ValueError('Lecture already closed')
             question = Question.objects.filter(pk=question_id)
-            if question not in lecture.question_set:
-                raise RuntimeError('Question is not assigned to given lecture')
             if not question:
                 raise ValueError('Bad question id')
             question = question.first()
+            if question.event != lecture:
+                raise RuntimeError('Question is not assigned to given lecture')
             if not question.can_vote(creator_entity):
                 raise RuntimeError('User cannot vote on this question.')
             question.add_vote(creator_entity, vote_value)
@@ -134,7 +151,7 @@ class UserConsumer(AsyncWebsocketConsumer):
         text = event['text']
 
         await self.send(text_data=json.dumps({
-            'type': 'direct_msg',
+            'type': m_private,
             'title': title,
             'text': text,
         }))
@@ -143,12 +160,13 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def msg_question(self, event):
         question = event['question']
         tags = event['tags']
-
+        question_id = event['question_id']
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'type': m_question,
             'question': question,
-            'tags': tags
+            'tags': tags,
+            'question_id': question_id
         }))
 
     async def msg_edit(self, event):

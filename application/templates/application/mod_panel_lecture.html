@@ -21,18 +21,87 @@
         <tr>
             <th>Question</th>
             <th>Tags</th>
+            <th>Votes</th>
             <th>Action</th>
         </tr>
         {%  for question in questions %}
-            <tr>
+            <tr id="row-{{ question.id }}">
                 <td>{{ question.text }}</td>
                 <td>{{ question.tags }}</td>
+                <td class="vote">{{ question.votes_value }}</td>
                 <td>
-                    <button class="btn btn-success">APPROVE</button>
+{#                    <a href="{%  url 'application:approve_question' lecture_id=lecture_id question_id=question.id %}">#}
+                        <button value="{{ question.id }}" class="btn btn-success approve">APPROVE</button>
+{#                    </a>#}
                 </td>
             </tr>
         {% endfor %}
     </table>
+    <div>
+        <a href="{%  url 'application:close_lecture' lecture_id=lecture_id %}">
+            <button class="btn btn-warning">CLOSE LECTURE</button>
+        </a>
+    </div>
 </div>
+
+<script>
+    var lecture_id = '{{ lecture_id }}';
+
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/application/moderator/' + lecture_id + '/');
+
+    chatSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        if(data['type'] === 'msg_question') {
+            var question = data['question'];
+            var question_id = data['question_id'];
+            {#var url = '/application/moderator/' + lecture_id + '/' + question_id;#}
+            var tags = data['tags'];
+            console.log(data);
+            document.querySelector('#questions').innerHTML +=
+                "<tr><td>" + question + "</td><td>" + tags + "</td><td class=\"vote\">0</td><td>" +
+                {#"<a href=\"" + url +"\">" +#}
+                "<button value=\"" + question_id + "\" class=\"btn btn-success approve\">APPROVE</button>" +
+                {#"</a>" +#}
+                "</td></tr>";
+        } else if(data['type'] === 'msg_vote') {
+            var value = parseInt(data['vote']);
+            var question_id = data['question_id'];
+            var new_val = parseInt(document.querySelector("#row-" + question_id).querySelector(".vote").innerHTML) + value;
+            document.querySelector("#row-" + question_id).querySelector(".vote").innerHTML = new_val;
+            console.log("msg vote")
+        } else if(data['type'] === 'msg_edit') {
+            console.log("msg edit");
+        } else if(data['type'] === 'msg_delete') {
+            var question_id = data['question_id'];
+            console.log("msg delete");
+        } else if(data['type'] === 'msg_approve') {
+            var question_id = data['question_id'];
+            console.log("msg approve");
+        } else {
+            console.warn("Unknown message received: " + data['type']);
+        }
+
+    };
+
+    document.querySelectorAll('.approve').forEach( function(element) {
+            element.onclick = function (e) {
+                let question_id = element.getAttribute("value");
+                chatSocket.send(JSON.stringify({
+                    'type': 'msg_approve',
+                    'question_id': question_id,
+                }));
+                var tr_node = element.parentNode.parentNode;
+                tr_node.parentNode.removeChild(tr_node);
+            }
+        }
+    );
+
+    chatSocket.onclose = function(e) {
+        console.error('Socket closed unexpectedly');
+    };
+
+</script>
 
 {% endblock %}

@@ -13,13 +13,19 @@ from django.urls import reverse
 
 
 @login_required(login_url="application:user_login")
+def home(request):
+    redirection_path = get_redirection_for_user(request.user)
+    return HttpResponseRedirect(reverse(redirection_path))
+
+
+@login_required(login_url="application:user_login")
 @user_passes_test(lambda user: hasattr(user, 'moderator'))
 def mod_panel(request):
     template = loader.get_template('application/mod_panel.html')
     moderator = request.user.moderator
     context = {
         'moderator_name': request.user.username,
-        'lectures': list(moderator.moderated_lectures.all())
+        'lectures': list(moderator.moderated_lectures.filter(closed=False))
     }
     return HttpResponse(template.render(context, request))
 
@@ -30,13 +36,50 @@ def mod_panel_lecture(request, lecture_id):
     moderator = request.user.moderator
     if not moderator.moderated_lectures.filter(hash=lecture_id):
         return HttpResponse('Unauthorized', status=401)
+    lecture = Lecture.objects.filter(hash=lecture_id).first()
+    if lecture.closed is True:
+        return HttpResponseRedirect(reverse('application:mod_panel'))
     template = loader.get_template('application/mod_panel_lecture.html')
+    if lecture.moderated:
+        questions = list(Question.objects.filter(event=lecture_id, approved=False))
+    else:
+        questions = []
+    for question in questions:
+        question.votes_value = question.count_votes()
     context = {
         'moderator_name': request.user.username,
-        'questions': Question.objects.filter(event=lecture_id),
+        'questions': questions,
         'lecture_id': lecture_id
     }
     return HttpResponse(template.render(context, request))
+
+
+@login_required(login_url="application:user_login")
+@user_passes_test(lambda user: hasattr(user, 'moderator'))
+def question_approval(request, lecture_id, question_id):
+    moderator = request.user.moderator
+    if not moderator.moderated_lectures.filter(hash=lecture_id):
+        return HttpResponse('Unauthorized', status=401)
+    lecture = moderator.moderated_lectures.filter(hash=lecture_id).first()
+    if Question.objects.filter(pk=question_id):
+        question = Question.objects.filter(pk=question_id).first()
+        if lecture.question_set.filter(pk=question_id):
+            question.approved = True
+            question.save()
+    return HttpResponseRedirect(reverse('application:mod_panel_lecture', args=(lecture_id,)))
+
+
+@login_required(login_url="application:user_login")
+@user_passes_test(lambda user: hasattr(user, 'moderator'))
+def lecture_close(request, lecture_id):
+    moderator = request.user.moderator
+    if not moderator.moderated_lectures.filter(hash=lecture_id):
+        return HttpResponse('Unauthorized', status=401)
+    lecture = moderator.moderated_lectures.filter(hash=lecture_id).first()
+    if lecture.closed is False:
+        lecture.closed = True
+        lecture.save()
+    return HttpResponseRedirect(reverse('application:mod_panel'))
 
 
 @login_required(login_url="application:user_login")
@@ -58,12 +101,21 @@ def lecturer_panel_lecture(request, lecture_id):
     lecturer = request.user.lecturer
     if not lecturer.lectures.filter(hash=lecture_id):
         return HttpResponse('Unauthorized', status=401)
+    lecture = Lecture.objects.filter(hash=lecture_id)
+    if not lecture or lecture.first().closed is True:
+        return HttpResponseRedirect(reverse('application:mod_panel'))
     template = loader.get_template('application/lecturer_panel_lecture.html')
+    if lecture.first().moderated:
+        questions = list(Question.objects.filter(event=lecture_id, approved=True))
+    else:
+        questions = []
+    for question in questions:
+        question.votes_value = question.count_votes()
     context = {
-        'direct_messages': DirectMessage.objects.filter(receiver=request.user.id),
-        'questions': Question.objects.filter(event=lecture_id),
+        'direct_messages': list(DirectMessage.objects.filter(receiver=lecturer.id, event_id=lecture_id)),
+        'questions': questions,
         'lecture_id': lecture_id,
-        'allow_direct_questions': True,
+        'allow_direct_questions': lecture.first().direct_questions_allowed,
     }
     return HttpResponse(template.render(context, request))
 
@@ -83,22 +135,29 @@ def user_panel(request):
                 return HttpResponseRedirect(reverse('application:user_panel_lecture', args=(lecture_id, )))
     else:
         form = LectureSelectionForm()
-    context = {'user_name': participant_name,'form': form, 'id_incorrect': id_incorrect}
+    context = {'user_name': participant_name, 'form': form, 'id_incorrect': id_incorrect}
     return render(request, 'application/user_panel.html', context)
 
 
 @login_required(login_url="application:user_login")
 @user_passes_test(lambda user: hasattr(user, 'participant'))
 def user_panel_lecture(request, lecture_id):
+    if not Lecture.objects.filter(hash=lecture_id) or Lecture.objects.filter(hash=lecture_id).first().closed is True:
+        return HttpResponseRedirect(reverse('application:user_panel'))
+    lecture = Lecture.objects.filter(hash=lecture_id).first()
     participant = request.user.participant
     template = loader.get_template('application/user_panel_lecture.html')
+    questions = list(Question.objects.filter(event=lecture_id))
+    for question in questions:
+        question.votes_value = question.count_votes()
+        question.user_can_vote = question.can_vote(request.user)
     context = {
         'user_nick': participant.public_nickname,
         'user_name': request.user.username,
-        'direct_messages': DirectMessage.objects.filter(receiver=request.user.id),
-        'questions': Question.objects.filter(event=lecture_id),
+        'direct_messages': DirectMessage.objects.filter(creator=request.user.id, event__hash=lecture_id),
+        'questions': questions,
         'lecture_id': lecture_id,
-        'allow_direct_questions': True,
+        'allow_direct_questions': lecture.direct_questions_allowed,
     }
     return HttpResponse(template.render(context, request))
 
