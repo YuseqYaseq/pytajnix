@@ -28,11 +28,18 @@
                 <td>{{ question.text }}</td>
                 <td>{{ question.tags }}</td>
                 <td>
-                    <button class="btn btn-success">APPROVE</button>
+                    <a href="{%  url 'application:approve_question' lecture_id=lecture_id question_id=question.id %}">
+                        <button class="btn btn-success">APPROVE</button>
+                    </a>
                 </td>
             </tr>
         {% endfor %}
     </table>
+    <div>
+        <a href="{%  url 'application:close_lecture' lecture_id=lecture_id %}">
+            <button class="btn btn-warning">CLOSE LECTURE</button>
+        </a>
+    </div>
 </div>
 
 <script>
@@ -46,10 +53,14 @@
         var data = JSON.parse(e.data);
         if(data['type'] === 'msg_question') {
             var question = data['question'];
+            var question_id = data['question_id'];
+            var url = '/application/moderator/' + lecture_id + '/' + question_id;
             var tags = data['tags'];
             console.log(data);
             document.querySelector('#questions').innerHTML +=
-                "<tr><th>" + question + "</th><th>" + tags + "</th></tr>";
+                "<tr><td>" + question + "</td><td>" + tags + "</td><td><a href=\"" + url +"\">" +
+                "<button class=\"btn btn-success\">APPROVE</button>" +
+                "</a></td></tr>";
         } else if(data['type'] === 'msg_vote') {
             var value = data['value'];
             var question_id = data['question_id'];

@@ -5,7 +5,8 @@ from .common import *
 class LecturerConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.lecture_name = self.scope['url_route']['kwargs']['lecture_name']
-        if not Lecture.objects.filter(hash=self.lecture_name):
+        if not Lecture.objects.filter(hash=self.lecture_name) \
+                or Lecture.objects.filter(hash=self.lecture_name).first().closed:
             raise ValueError('Unknown lecture id.')
         self.private_msg_gn = private_msg_group_name + self.lecture_name
         self.approved_question_gn = approved_question_group_name + self.lecture_name

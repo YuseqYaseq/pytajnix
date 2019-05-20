@@ -51,6 +51,9 @@
 {% endif %}
 
 <script>
+    {% load static %}
+    var notification = new Audio('{% static message.mp3 %}');
+
     var lecture_id = '{{ lecture_id }}';
 
     var chatSocket = new WebSocket(
@@ -58,25 +61,28 @@
         '/ws/application/lecturer/' + lecture_id + '/');
 
     chatSocket.onmessage = function(e) {
+        notification.play();
         var data = JSON.parse(e.data);
-        if(data['type'] === 'msg_question') {
+        if(data['type'] === 'msg_approve') {
             var question = data['question'];
             var tags = data['tags'];
             var question_id = data['question_id'];
             console.log(data);
             document.querySelector('#questions').innerHTML +=
-                "<tr><th>" + question + "</th><th>" + tags + "</th></tr>";
+                "<tr><td>" + question + "</td><td>" + tags + "</td></tr>";
         } else if(data['type'] === 'msg_private'){
             var title = data['title'];
             var text = data['text'];
             console.log(data);
             document.querySelector('#direct-messages').innerHTML +=
-                "<tr><th>" + title + "</th><th>" + text + "</th></tr>";
-        } else if(data['type'] === 'msg_approve') {
+                "<tr><td>" + title + "</td><td>" + text + "</td></tr>";
+        } else if(data['type'] === 'msg_question') {
             var question = data['question'];
             var tags = data['tags'];
             var question_id = data['question_id'];
-            console.log("msg approve")
+            console.log("msg waiting for approval")
+            document.querySelector('#questions').innerHTML +=
+                "<tr><td>" + question + "</td><td>" + tags + "</td></tr>";
         } else {
             console.warn("Unknown message received: " + data['type']);
         }
