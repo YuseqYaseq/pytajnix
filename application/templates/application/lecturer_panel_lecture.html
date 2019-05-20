@@ -21,11 +21,13 @@
     <tr>
         <th>Question</th>
         <th>Tags</th>
+        <th>Votes</th>
     </tr>
     {%  for question in questions %}
-        <tr>
-            <th>{{ question.text }}</th>
-            <th>{{ question.tags }}</th>
+        <tr id="row-{{ question.id }}">
+            <td>{{ question.text }}</td>
+            <td>{{ question.tags }}</td>
+            <td class="vote">{{ question.votes_value }}</td>
         </tr>
     {% endfor %}
 </table>
@@ -52,7 +54,7 @@
 
 <script>
     {% load static %}
-    var notification = new Audio('{% static message.mp3 %}');
+    var notification = new Audio('{% static "message.mp3" %}');
 
     var lecture_id = '{{ lecture_id }}';
 
@@ -69,7 +71,7 @@
             var question_id = data['question_id'];
             console.log(data);
             document.querySelector('#questions').innerHTML +=
-                "<tr><td>" + question + "</td><td>" + tags + "</td></tr>";
+                "<tr><td>" + question + "</td><td>" + tags + "</td><td class=\"vote\">0</td></tr>";
         } else if(data['type'] === 'msg_private'){
             var title = data['title'];
             var text = data['text'];
@@ -80,9 +82,15 @@
             var question = data['question'];
             var tags = data['tags'];
             var question_id = data['question_id'];
-            console.log("msg waiting for approval")
+            console.log("msg waiting for approval");
             document.querySelector('#questions').innerHTML +=
                 "<tr><td>" + question + "</td><td>" + tags + "</td></tr>";
+        } else if(data['type'] === 'msg_vote'){
+           var value = parseInt(data['vote']);
+           var question_id = data['question_id'];
+           var new_val = parseInt(document.querySelector("#row-" + question_id).querySelector(".vote").innerHTML) + value;
+           document.querySelector("#row-" + question_id).querySelector(".vote").innerHTML = new_val;
+           console.log("msg vote")
         } else {
             console.warn("Unknown message received: " + data['type']);
         }

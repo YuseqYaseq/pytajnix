@@ -40,9 +40,15 @@ def mod_panel_lecture(request, lecture_id):
     if lecture.closed is True:
         return HttpResponseRedirect(reverse('application:mod_panel'))
     template = loader.get_template('application/mod_panel_lecture.html')
+    if lecture.moderated:
+        questions = list(Question.objects.filter(event=lecture_id, approved=False))
+    else:
+        questions = []
+    for question in questions:
+        question.votes_value = question.count_votes()
     context = {
         'moderator_name': request.user.username,
-        'questions': Question.objects.filter(event=lecture_id, approved=False),
+        'questions': questions,
         'lecture_id': lecture_id
     }
     return HttpResponse(template.render(context, request))
@@ -95,12 +101,21 @@ def lecturer_panel_lecture(request, lecture_id):
     lecturer = request.user.lecturer
     if not lecturer.lectures.filter(hash=lecture_id):
         return HttpResponse('Unauthorized', status=401)
+    lecture = Lecture.objects.filter(hash=lecture_id)
+    if not lecture or lecture.first().closed is True:
+        return HttpResponseRedirect(reverse('application:mod_panel'))
     template = loader.get_template('application/lecturer_panel_lecture.html')
+    if lecture.first().moderated:
+        questions = list(Question.objects.filter(event=lecture_id, approved=True))
+    else:
+        questions = []
+    for question in questions:
+        question.votes_value = question.count_votes()
     context = {
         'direct_messages': list(DirectMessage.objects.filter(receiver=lecturer.id, event_id=lecture_id)),
-        'questions': Question.objects.filter(event=lecture_id),
+        'questions': questions,
         'lecture_id': lecture_id,
-        'allow_direct_questions': True,
+        'allow_direct_questions': lecture.first().direct_questions_allowed,
     }
     return HttpResponse(template.render(context, request))
 

@@ -56,10 +56,11 @@ class ModeratorConsumer(AsyncWebsocketConsumer):
             question_id = text_data_json['question_id']
             lecture = Lecture.objects.filter(hash=self.lecture_name).first()
             question = Question.objects.filter(pk=question_id)
-            if question not in lecture.question_set:
-                raise RuntimeError('Question is not assigned to given lecture')
             if not question:
                 raise ValueError('Bad question id')
+            if question.first().event != lecture:
+                raise RuntimeError('Question is not assigned to given lecture')
+
 
             question = question.first()
             question.approved = True
