@@ -69,9 +69,10 @@
             var question = data['question'];
             var tags = data['tags'];
             var question_id = data['question_id'];
+            var votes = data['question_votes'];
             console.log(data);
             document.querySelector('#questions').innerHTML +=
-                "<tr><td>" + question + "</td><td>" + tags + "</td><td class=\"vote\">0</td></tr>";
+                "<tr id=\"row-" + question_id + "\"><td>" + question + "</td><td>" + tags + "</td><td class=\"vote\">" + votes + "</td></tr>";
         } else if(data['type'] === 'msg_private'){
             var title = data['title'];
             var text = data['text'];
@@ -79,12 +80,13 @@
             document.querySelector('#direct-messages').innerHTML +=
                 "<tr><td>" + title + "</td><td>" + text + "</td></tr>";
         } else if(data['type'] === 'msg_question') {
+            console.log(data);
             var question = data['question'];
             var tags = data['tags'];
             var question_id = data['question_id'];
             console.log("msg waiting for approval");
             document.querySelector('#questions').innerHTML +=
-                "<tr><td>" + question + "</td><td>" + tags + "</td></tr>";
+                "<tr id=\"row-" + question_id + "\"><td>" + question + "</td><td>" + tags + "</td><td class=\"vote\">0</td></tr>";
         } else if(data['type'] === 'msg_vote'){
            var value = parseInt(data['vote']);
            var question_id = data['question_id'];

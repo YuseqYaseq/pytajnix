@@ -10,6 +10,7 @@ class ModeratorConsumer(AsyncWebsocketConsumer):
             raise ValueError('Unknown lecture id.')
         self.approved_msg_gn = approved_question_group_name + self.lecture_name
         self.question_msg_gn = question_group_name + self.lecture_name
+        self.all_msg_gn = all_group_name + self.lecture_name
 
         # Join room group
         await self.channel_layer.group_add(
@@ -19,6 +20,11 @@ class ModeratorConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_add(
             self.question_msg_gn,
+            self.channel_name
+        )
+
+        await self.channel_layer.group_add(
+            self.all_msg_gn,
             self.channel_name
         )
 
@@ -33,6 +39,11 @@ class ModeratorConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_discard(
             self.question_msg_gn,
+            self.channel_name
+        )
+
+        await self.channel_layer.group_discard(
+            self.all_msg_gn,
             self.channel_name
         )
 
@@ -65,12 +76,13 @@ class ModeratorConsumer(AsyncWebsocketConsumer):
             question = question.first()
             question.approved = True
             question.save()
-
+            question = Question.objects.filter(pk=question_id).first()
             await self.channel_layer.group_send(
                 self.approved_msg_gn,
                 {
                     'type': m_approve,
                     'question_id': text_data_json['question_id'],
+                    'question_votes': question.count_votes(),
                     'question': question.text,
                     'tags': question.tags,
                 }
@@ -81,12 +93,14 @@ class ModeratorConsumer(AsyncWebsocketConsumer):
 
     async def msg_question(self, event):
         question = event['question']
+        question_id = event['question_id']
         tags = event['tags']
         event['type'] = m_question
         await self.send(text_data=json.dumps({
             'type': m_question,
             'question': question,
-            'tags': tags
+            'tags': tags,
+            'question_id': question_id
         }))
 
     async def msg_edit(self, event):

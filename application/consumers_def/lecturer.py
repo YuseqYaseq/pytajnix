@@ -10,6 +10,8 @@ class LecturerConsumer(AsyncWebsocketConsumer):
             raise ValueError('Unknown lecture id.')
         self.private_msg_gn = private_msg_group_name + self.lecture_name
         self.approved_question_gn = approved_question_group_name + self.lecture_name
+        self.all_msg_gn = all_group_name + self.lecture_name
+
 
         # Join room group
         await self.channel_layer.group_add(
@@ -19,6 +21,11 @@ class LecturerConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_add(
             self.approved_question_gn,
+            self.channel_name
+        )
+
+        await self.channel_layer.group_add(
+            self.all_msg_gn,
             self.channel_name
         )
 
@@ -36,6 +43,11 @@ class LecturerConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+        await self.channel_layer.group_discard(
+            self.all_msg_gn,
+            self.channel_name
+        )
+
     # Receive from websocket
     async def receive(self, text_data):
         pass
@@ -45,12 +57,15 @@ class LecturerConsumer(AsyncWebsocketConsumer):
         question = event['question']
         tags = event['tags']
         question_id = event['question_id']
+        question_votes = event['question_votes']
+        self.sent_questions.append(question_id)
 
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'type': m_approve,
             'question': question,
             'question_id': question_id,
+            'question_votes': question_votes,
             'tags': tags
         }))
 
@@ -71,3 +86,13 @@ class LecturerConsumer(AsyncWebsocketConsumer):
             'question_id': question_id,
             'tags': tags
         }))
+
+    async def msg_vote(self, event):
+        question_id = event['question_id']
+        question = Question.objects.filter(pk=question_id)
+        if not question:
+            return
+        question = question.first()
+        if question.event.moderated and not question.approved:
+            return
+        await self.send(text_data=json.dumps(event))

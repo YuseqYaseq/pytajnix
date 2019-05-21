@@ -7,6 +7,7 @@ from application.models import Question
 private_msg_group_name = 'private_msg_'
 question_group_name = 'question_'
 approved_question_group_name = 'approved_question_'
+all_group_name = 'everyone_'
 
 # msg types:
 m_private = "msg_private"
