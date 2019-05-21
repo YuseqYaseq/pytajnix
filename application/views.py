@@ -10,6 +10,7 @@ from django.contrib import auth
 from .forms import LoginForm, RegisterForm, LectureSelectionForm
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
+import csv
 
 
 @login_required(login_url="application:user_login")
@@ -25,7 +26,8 @@ def mod_panel(request):
     moderator = request.user.moderator
     context = {
         'moderator_name': request.user.username,
-        'lectures': list(moderator.moderated_lectures.filter(closed=False))
+        'lectures': list(moderator.moderated_lectures.filter(closed=False)),
+        'closed_lectures': list(moderator.moderated_lectures.filter(closed=True))
     }
     return HttpResponse(template.render(context, request))
 
@@ -52,6 +54,19 @@ def mod_panel_lecture(request, lecture_id):
         'lecture_id': lecture_id
     }
     return HttpResponse(template.render(context, request))
+
+
+@login_required(login_url="application:user_login")
+@user_passes_test(lambda user: hasattr(user, 'moderator'))
+def mod_export_lecture(request, lecture_id):
+    moderator = request.user.moderator
+    if not moderator.moderated_lectures.filter(hash=lecture_id):
+        return HttpResponse('Unauthorized', status=401)
+    lecture = Lecture.objects.filter(hash=lecture_id).first()
+    if not lecture.closed:
+        return HttpResponse('Unauthorized', status=401)
+
+    return export_lecture(lecture, lecture_id)
 
 
 @login_required(login_url="application:user_login")
@@ -90,7 +105,8 @@ def lecturer_panel(request):
     context = {
         'lecturer_name': '{} {}'.format(lecturer.name, lecturer.surname),
         'lecturer_title': lecturer.title,
-        'lectures': list(lecturer.lectures.all())
+        'lectures': list(lecturer.lectures.filter(closed=False)),
+        'closed_lectures': list(lecturer.lectures.filter(closed=True))
     }
     return HttpResponse(template.render(context, request))
 
@@ -108,7 +124,7 @@ def lecturer_panel_lecture(request, lecture_id):
     if lecture.first().moderated:
         questions = list(Question.objects.filter(event=lecture_id, approved=True))
     else:
-        questions = []
+        questions = list(Question.objects.filter(event=lecture_id))
     for question in questions:
         question.votes_value = question.count_votes()
     context = {
@@ -118,6 +134,19 @@ def lecturer_panel_lecture(request, lecture_id):
         'allow_direct_questions': lecture.first().direct_questions_allowed,
     }
     return HttpResponse(template.render(context, request))
+
+
+@login_required(login_url="application:user_login")
+@user_passes_test(lambda user: hasattr(user, 'lecturer'))
+def lecturer_export_lecture(request, lecture_id):
+    lecturer = request.user.lecturer
+    if not lecturer.lectures.filter(hash=lecture_id):
+        return HttpResponse('Unauthorized', status=401)
+    lecture = Lecture.objects.filter(hash=lecture_id).first()
+    if not lecture.closed:
+        return HttpResponse('Unauthorized', status=401)
+
+    return export_lecture(lecture, lecture_id)
 
 
 @login_required(login_url="application:user_login")
@@ -208,3 +237,16 @@ def user_signup(request):
     else:
         form = RegisterForm()
     return render(request, 'application/signup.html', {'form': form, 'error': error, 'error_message': err_message})
+
+
+def export_lecture(lecture, lecture_id):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="' + lecture.title + '.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([lecture.title, lecture.hash])
+    writer.writerow(['Text', 'Tags', 'Votes', 'Approved'])
+    for question in list(Question.objects.filter(event=lecture_id)):
+        writer.writerow([question.text, question.tags, question.votes_value, question.approved])
+
+    return response

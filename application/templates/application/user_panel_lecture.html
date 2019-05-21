@@ -97,16 +97,10 @@
             var question_id = data['question_id'];
             console.log(data);
             document.querySelector('#questions').innerHTML +=
-                "<tr id=\"" + question_id +"\"><td>" + question + "</td><td>" + tags + "</td><td class=\"vote\">0</td><td>" +
+                "<tr id=\"row-" + question_id +"\"><td>" + question + "</td><td>" + tags + "</td><td class=\"vote\">0</td><td>" +
                 "<button class=\"btn btn-success up_vote_question\" value=\"" + question_id + "\">+</button>" +
                 "<button class=\"btn btn-danger down_vote_question\" value=\"" + question_id + "\">-</button>" +
                 "</td></tr>";
-        } else if(data['type'] === 'msg_private'){
-            var title = data['title'];
-            var text = data['text'];
-            console.log(data);
-            document.querySelector('#direct-messages').innerHTML +=
-                "<tr><th>" + title + "</th><th>" + text + "</th></tr>";
         } else if(data['type'] === 'msg_vote') {
             var value = parseInt(data['vote']);
             var question_id = data['question_id'];
@@ -120,7 +114,7 @@
         } else {
             console.warn("Unknown message received: " + data['type']);
         }
-
+        set_handlers();
     };
 
     chatSocket.onclose = function(e) {
@@ -133,6 +127,49 @@
             document.querySelector('#question-submit').click();
         }
     };
+
+    function set_handlers(){
+        document.querySelectorAll('.up_vote_question').forEach( function(element) {
+            element.onclick = function (e) {
+                let question_id = element.getAttribute("value");
+                let creator = "{{ user_name }}";
+                let vote_value = 1;
+                chatSocket.send(JSON.stringify({
+                    'creator': creator,
+                    'type': 'msg_vote',
+                    'question_id': question_id,
+                    'vote': vote_value
+                }));
+                element.parentElement.querySelectorAll("button").forEach(
+                    function (button) {
+                        button.parentNode.removeChild(button);
+                    }
+                );
+            }
+        }
+        );
+
+    document.querySelectorAll('.down_vote_question').forEach( function(element) {
+            element.onclick = function (e) {
+                let question_id = element.getAttribute("value");
+                let creator = "{{ user_name }}";
+                let vote_value = -1;
+                chatSocket.send(JSON.stringify({
+                    'creator': creator,
+                    'type': 'msg_vote',
+                    'question_id': question_id,
+                    'vote': vote_value
+                }));
+                element.parentElement.querySelectorAll("button").forEach(
+                    function (button) {
+                        button.parentNode.removeChild(button);
+                    }
+                );
+
+            }
+        }
+        );
+    }
 
     document.querySelector('#question-submit').onclick = function(e) {
         var questionInputDom = document.querySelector('#question-input');
@@ -164,48 +201,12 @@
 
         questionInputDom.value = '';
         tagsInputDom.value = '';
+        document.querySelector('#direct-messages').innerHTML +=
+            "<tr><td>" + title + "</td><td>" + text + "</td></tr>";
     };
 
-    document.querySelectorAll('.up_vote_question').forEach( function(element) {
-            element.onclick = function (e) {
-                let question_id = element.getAttribute("value");
-                let creator = "{{ user_name }}";
-                let vote_value = 1;
-                chatSocket.send(JSON.stringify({
-                    'creator': creator,
-                    'type': 'msg_vote',
-                    'question_id': question_id,
-                    'vote': vote_value
-                }));
-                element.parentElement.querySelectorAll("button").forEach(
-                    function (button) {
-                        button.parentNode.removeChild(button);
-                    }
-                );
-            }
-        }
-    );
+    set_handlers();
 
-    document.querySelectorAll('.down_vote_question').forEach( function(element) {
-            element.onclick = function (e) {
-                let question_id = element.getAttribute("value");
-                let creator = "{{ user_name }}";
-                let vote_value = -1;
-                chatSocket.send(JSON.stringify({
-                    'creator': creator,
-                    'type': 'msg_vote',
-                    'question_id': question_id,
-                    'vote': vote_value
-                }));
-                element.parentElement.querySelectorAll("button").forEach(
-                    function (button) {
-                        button.parentNode.removeChild(button);
-                    }
-                );
-
-            }
-        }
-    )
 
 </script>
 
