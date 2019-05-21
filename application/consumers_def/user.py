@@ -9,7 +9,7 @@ class UserConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.lecture_name = self.scope['url_route']['kwargs']['lecture_name']
         lectures = Lecture.objects.filter(hash=self.lecture_name)
-        if not lectures :
+        if not lectures:
             raise ValueError('Unknown lecture id.')
         self.private_msg_gn = private_msg_group_name + self.lecture_name
         lecture = lectures.first()
@@ -19,6 +19,8 @@ class UserConsumer(AsyncWebsocketConsumer):
             self.question_msg_gn = question_group_name + self.lecture_name
         else:
             self.question_msg_gn = approved_question_group_name + self.lecture_name
+
+        self.all_msg_gn = all_group_name + self.lecture_name
         # Join room group
         await self.channel_layer.group_add(
             self.private_msg_gn,
@@ -27,6 +29,11 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_add(
             self.question_msg_gn,
+            self.channel_name
+        )
+
+        await self.channel_layer.group_add(
+            self.all_msg_gn,
             self.channel_name
         )
 
@@ -41,6 +48,11 @@ class UserConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_discard(
             self.question_msg_gn,
+            self.channel_name
+        )
+
+        await self.channel_layer.group_discard(
+            self.all_msg_gn,
             self.channel_name
         )
 
@@ -65,7 +77,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             question_entity.creator = creator_entity
             question_entity.event = lecture
             question_entity.save()
-            print( question_entity.id)
             # Send message to room group
             await self.channel_layer.group_send(
                 self.question_msg_gn,
@@ -134,9 +145,8 @@ class UserConsumer(AsyncWebsocketConsumer):
                 raise RuntimeError('User cannot vote on this question.')
             question.add_vote(creator_entity, vote_value)
             question.save()
-
             await self.channel_layer.group_send(
-                self.question_msg_gn,
+                self.all_msg_gn,
                 {
                     'type': m_vote,
                     'question_id': question_id,

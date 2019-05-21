@@ -10,6 +10,7 @@ class ModeratorConsumer(AsyncWebsocketConsumer):
             raise ValueError('Unknown lecture id.')
         self.approved_msg_gn = approved_question_group_name + self.lecture_name
         self.question_msg_gn = question_group_name + self.lecture_name
+        self.all_msg_gn = all_group_name + self.lecture_name
 
         # Join room group
         await self.channel_layer.group_add(
@@ -19,6 +20,11 @@ class ModeratorConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_add(
             self.question_msg_gn,
+            self.channel_name
+        )
+
+        await self.channel_layer.group_add(
+            self.all_msg_gn,
             self.channel_name
         )
 
@@ -33,6 +39,11 @@ class ModeratorConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_discard(
             self.question_msg_gn,
+            self.channel_name
+        )
+
+        await self.channel_layer.group_discard(
+            self.all_msg_gn,
             self.channel_name
         )
 
