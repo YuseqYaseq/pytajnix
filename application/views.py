@@ -108,7 +108,7 @@ def lecturer_panel_lecture(request, lecture_id):
     if lecture.first().moderated:
         questions = list(Question.objects.filter(event=lecture_id, approved=True))
     else:
-        questions = []
+        questions = list(Question.objects.filter(event=lecture_id))
     for question in questions:
         question.votes_value = question.count_votes()
     context = {

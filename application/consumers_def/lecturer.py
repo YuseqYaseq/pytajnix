@@ -12,7 +12,6 @@ class LecturerConsumer(AsyncWebsocketConsumer):
         self.approved_question_gn = approved_question_group_name + self.lecture_name
         self.all_msg_gn = all_group_name + self.lecture_name
 
-        self.sent_questions = []
 
         # Join room group
         await self.channel_layer.group_add(
@@ -58,6 +57,7 @@ class LecturerConsumer(AsyncWebsocketConsumer):
         question = event['question']
         tags = event['tags']
         question_id = event['question_id']
+        question_votes = event['question_votes']
         self.sent_questions.append(question_id)
 
         # Send message to WebSocket
@@ -65,6 +65,7 @@ class LecturerConsumer(AsyncWebsocketConsumer):
             'type': m_approve,
             'question': question,
             'question_id': question_id,
+            'question_votes': question_votes,
             'tags': tags
         }))
 
@@ -77,7 +78,6 @@ class LecturerConsumer(AsyncWebsocketConsumer):
         question = event['question']
         tags = event['tags']
         question_id = event['question_id']
-        self.sent_questions.append(question_id)
 
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
@@ -89,6 +89,10 @@ class LecturerConsumer(AsyncWebsocketConsumer):
 
     async def msg_vote(self, event):
         question_id = event['question_id']
-        if question_id not in self.sent_questions:
+        question = Question.objects.filter(pk=question_id)
+        if not question:
+            return
+        question = question.first()
+        if question.event.moderated and not question.approved:
             return
         await self.send(text_data=json.dumps(event))

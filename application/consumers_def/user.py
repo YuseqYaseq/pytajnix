@@ -77,6 +77,7 @@ class UserConsumer(AsyncWebsocketConsumer):
             question_entity.creator = creator_entity
             question_entity.event = lecture
             question_entity.save()
+            print(question_entity.id)
             # Send message to room group
             await self.channel_layer.group_send(
                 self.question_msg_gn,
