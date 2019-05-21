@@ -41,6 +41,34 @@
 </table>
 
 
+</div>
+
+<div class="album pt-3 py-3">
+    <h2>CLOSED LECTURES</h2>
+
+<table id="closed_lectures" class="table table-sm">
+    <tr>
+        <th>Title</th>
+        <th>Start time</th>
+        <th>End time</th>
+        <th>Export</th>
+    </tr>
+    {%  for lecture in closed_lectures %}
+        <tr>
+            <td>{{ lecture.title }}</td>
+            <td>{{ lecture.start_time }}</td>
+            <td>{{ lecture.end_time }}</td>
+            <td>
+                <a href='{% url 'application:mod_export_lecture' lecture_id=lecture.hash %}'>
+                  <button class="btn btn-success">
+                     EXPORT
+                  </button>
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
 
 </div>
 
