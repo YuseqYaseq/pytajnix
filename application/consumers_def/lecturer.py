@@ -58,7 +58,6 @@ class LecturerConsumer(AsyncWebsocketConsumer):
         tags = event['tags']
         question_id = event['question_id']
         question_votes = event['question_votes']
-        self.sent_questions.append(question_id)
 
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
