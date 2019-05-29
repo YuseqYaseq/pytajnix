@@ -11,15 +11,15 @@
 
     <div class="jumbotron jumbotron-fluid">
         <div class="container">
-          <h1 style="text-align:center;">USER PANEL</h1>
+          <h1 class="display-4" style="text-align:center;">PANEL UŻYTKOWNIKA</h1>
           <p class="lead" style="text-align:center;"> {{user_name}}</p>
         </div>
       </div>
 
     <center>
-        <h2>PICK LECTURE TO SUBSCRIBE</h2>
+        <h2>WYBIERZ WYKŁAD</h2>
         {% if id_incorrect %}
-            <p class="text-danger">Incorrect lecture hash!</p>
+            <p class="text-danger">NIEPOPRAWNY KOD!</p>
         {% endif %}
         <form action="{% url 'application:user_panel' %}" method="post">
         {% csrf_token %}

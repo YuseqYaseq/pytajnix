@@ -11,18 +11,18 @@
 
     <div class="jumbotron jumbotron-fluid">
         <div class="container">
-          <h1 style="text-align:center;">MODERATOR PANEL</h1>
+          <h1 style="text-align:center;">PANEL MODERATORA</h1>
             <h2 style="text-align:center;">{{ moderator_name }}</h2>
-          <p class="lead" style="text-align:center;">Lectures to moderate</p>
+          <p class="lead" style="text-align:center;">Wykłady do moderacji</p>
         </div>
     </div>
-    <h2>PUBLIC QUESTIONS</h2>
+    <h2>PYTANIA PUBLICZNE</h2>
     <table id="questions" class="table table-sm">
         <tr>
-            <th>Question</th>
-            <th>Tags</th>
-            <th>Votes</th>
-            <th>Action</th>
+            <th>Pytanie</th>
+            <th>Tagi</th>
+            <th>Głosy</th>
+            <th></th>
         </tr>
         {%  for question in questions %}
             <tr id="row-{{ question.id }}">
@@ -31,7 +31,7 @@
                 <td class="vote">{{ question.votes_value }}</td>
                 <td>
 {#                    <a href="{%  url 'application:approve_question' lecture_id=lecture_id question_id=question.id %}">#}
-                        <button value="{{ question.id }}" class="btn btn-success approve">APPROVE</button>
+                        <button value="{{ question.id }}" class="btn btn-success approve">ZATWIERDŹ</button>
 {#                    </a>#}
                 </td>
             </tr>
@@ -39,7 +39,7 @@
     </table>
     <div>
         <a href="{%  url 'application:close_lecture' lecture_id=lecture_id %}">
-            <button class="btn btn-warning">CLOSE LECTURE</button>
+            <button class="btn btn-warning">ZAMKNIJ WYKŁAD</button>
         </a>
     </div>
 </div>

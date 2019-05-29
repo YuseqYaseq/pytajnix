@@ -12,7 +12,7 @@
 
 <h1>Login</h1>
 {% if pass_incorrect %}
-    <p class="text-danger">Incorrect credentials!</p>
+    <p class="text-danger">Niepoprawne dane logowania</p>
 {% endif %}
 <form action="{% url 'application:user_login' %}" method="post">
 {% csrf_token %}
@@ -21,7 +21,7 @@
     </table>
 <input type="submit" value="Log in" />
 </form>
-<a href="{% url 'application:user_signup' %}">First time? Create an account!</a>
+<a href="{% url 'application:user_signup' %}">Pierwszy raz? Stwórz konto</a>
 
 </div>
 
