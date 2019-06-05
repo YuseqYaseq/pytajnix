@@ -106,7 +106,8 @@ def lecturer_panel(request):
         'lecturer_name': '{} {}'.format(lecturer.name, lecturer.surname),
         'lecturer_title': lecturer.title,
         'lectures': list(lecturer.lectures.filter(closed=False)),
-        'closed_lectures': list(lecturer.lectures.filter(closed=True))
+        'closed_lectures': list(lecturer.lectures.filter(closed=True)),
+        'amount_of_lectures': lecturer.count_lectures()
     }
     return HttpResponse(template.render(context, request))
 

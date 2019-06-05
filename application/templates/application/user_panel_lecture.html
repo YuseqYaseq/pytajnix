@@ -9,21 +9,21 @@
     </div>
     {% endif %}
 
-    <div class="jumbotron jumbotron-fluid">
+    <div class="jumbotron container-fluid">
         <div class="container">
-          <h1 style="text-align:center;">LECTURE {{lecture_id}}</h1>
+          <h1 class="display-4" style="text-align:center;">WYKŁAD {{lecture_id}}</h1>
             <h2 style="text-align:center;">{{user_nick}}</h2>
-          <p class="lead" style="text-align:center;">User panel</p>
+          <p class="lead" style="text-align:center;">panel użytkownika</p>
         </div>
       </div>
 
-    <h2>PUBLIC QUESTIONS</h2>
+    <h2>PYTANIA PUBLICZNE</h2>
     <table id="questions" class="table table-sm">
         <tr>
-            <th>Question</th>
-            <th>Tags</th>
-            <th>Votes</th>
-            <th>Action</th>
+            <th>Pytanie</th>
+            <th>Tagi</th>
+            <th>Głosy</th>
+            <th>Akcja</th>
         </tr>
         {%  for question in questions %}
             <tr id="row-{{ question.id }}">
@@ -43,11 +43,11 @@
     </table>
     
     {% if allow_direct_questions %}
-    <h2>PRIVATE QUESTIONS</h2>
+    <h2>PYTANIA PRYWATNE</h2>
     <table id="direct-messages" class="table table-sm">
         <tr>
-            <th>Title</th>
-            <th>Text</th>
+            <th>Tytuł</th>
+            <th>Tekst</th>
         </tr>
         {% for direct_message in direct_messages %}
         <tr>
@@ -60,26 +60,63 @@
 <br><br>
     <hr />
     <div class="justify-content-right">
-    <h2>ASK QUESTION</h2>
+    <h2>ZADAJ PYTANIE</h2>
     <div class="input-group mb-3">
         <div class="input-group-prepend">
-          <span class="input-group-text" id="basic-addon1">QUESTION</span>
+          <span class="input-group-text" id="basic-addon1">PYTANIE</span>
         </div>
         <input id="question-input" type="text" size="50">
       </div>
 
       <div class="input-group mb-3">
         <div class="input-group-prepend">
-          <span class="input-group-text" id="basic-addon1">TAGS</span>
+          <span class="input-group-text" id="basic-addon1">TAGI </span>
         </div>
         <input id="question-tags-input" type="text" size="50">
       </div>
 
 <br/>
-<input id="question-submit" type="button" class="btn btn-primary" value="Send"/>
-<input id="message-submit" type="button"  class="btn btn-secondary" value="Send private"/>
+<input id="question-submit" type="button" class="btn btn-primary" value="WYŚLIJ"/>
+<input id="message-submit" type="button"  class="btn btn-secondary" value="WYŚLIJ PRYWATNIE"/>
 </div>
+
 <script>
+sortTable()
+function sortTable() {
+        var table, rows, switching, i, x, y, shouldSwitch;
+        table = document.getElementById("questions");
+        switching = true;
+        /* Make a loop that will continue until
+        no switching has been done: */
+        while (switching) {
+            // Start by saying: no switching is done:
+            switching = false;
+            rows = table.rows;
+            /* Loop through all table rows (except the
+            first, which contains table headers): */
+            for (i = 1; i < (rows.length - 1); i++) {
+            // Start by saying there should be no switching:
+            shouldSwitch = false;
+            /* Get the two elements you want to compare,
+            one from current row and one from the next: */
+            x = rows[i].getElementsByTagName("TD")[2];
+            y = rows[i + 1].getElementsByTagName("TD")[2];
+            // Check if the two rows should switch place:
+            if (x.innerHTML < y.innerHTML) {
+                // If so, mark as a switch and break the loop:
+                shouldSwitch = true;
+                break;
+            }
+            }
+            if (shouldSwitch) {
+            /* If a switch has been marked, make the switch
+            and mark that a switch has been done: */
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            }
+        }
+        }
+
     {% load static %}
     var notification = new Audio('{% static "message.mp3" %}');
     let lecture_id = "{{ lecture_id }}";
@@ -93,6 +130,7 @@
         if(data['type'] === 'msg_question') {
             notification.play();
             var question = data['question'];
+            
             var tags = data['tags'];
             var question_id = data['question_id'];
             console.log(data);
@@ -115,6 +153,7 @@
             console.warn("Unknown message received: " + data['type']);
         }
         set_handlers();
+        sortTable()
     };
 
     chatSocket.onclose = function(e) {
@@ -149,6 +188,8 @@
         }
         );
 
+    
+
     document.querySelectorAll('.down_vote_question').forEach( function(element) {
             element.onclick = function (e) {
                 let question_id = element.getAttribute("value");
@@ -182,7 +223,7 @@
             'question': question,
             'tags': tags
         }));
-
+        sortTable()
         questionInputDom.value = '';
         tagsInputDom.value = '';
     };
@@ -203,6 +244,7 @@
         tagsInputDom.value = '';
         document.querySelector('#direct-messages').innerHTML +=
             "<tr><td>" + title + "</td><td>" + text + "</td></tr>";
+            sortTable()
     };
 
     set_handlers();

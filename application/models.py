@@ -74,6 +74,12 @@ class Lecturer(models.Model):
             self.add_lecture(lecture, save=False)
         self.save()
 
+    def count_lectures(self):
+        result = 0
+        for lecture in self.lectures.all():
+            result += 1
+        return result
+
     def __str__(self):
         title = self.title if self.title is not None else ''
         return '{} {} {}'.format(title, self.user.first_name, self.user.last_name)

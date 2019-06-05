@@ -19,17 +19,16 @@
   <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container">
-      <a class="navbar-brand" href='/application'>
-    
-      </a>
+          
+      <a class="navbar-brand" href='/application'>  PYTAJNIX </a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav ml-auto">
           {% if user.is_authenticated %}
-          <a class="nav-item nav-link" href='/application'>Create <span class="oi oi-plus"></span></a>
-          <a class="nav-item nav-link" href="javascript:{document.getElementById('logout').submit()}" onclick="">Logout <span class="oi oi-account-logout"></span></a>
+          <a class="nav-item nav-link" href='/admin'>Panel Admina <span class="oi oi-plus"></span></a>
+          <a class="nav-item nav-link" href="javascript:{document.getElementById('logout').submit()}" onclick="">Wyloguj <span class="oi oi-account-logout"></span></a>
           <form id="logout" method="POST" action={% url 'application:user_logout' %}>
             {% csrf_token %}
             <input type="hidden" />
@@ -53,7 +52,7 @@
   <footer class="text-muted">
     <div class="container text-center">
       <br><br>
-      <p>IO Project<br>Pęczek / Jasek / Kędziora / Raszka </p>
+      <p>WIEiT, Inżynieria Oprogramowania 2019<br>Pęczek / Jasek / Kędziora / Raszka </p>
       </div>
   </footer>
 

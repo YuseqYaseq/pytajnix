@@ -11,17 +11,17 @@
 
     <div class="jumbotron jumbotron-fluid">
         <div class="container">
-          <h1 style="text-align:center;">MODERATOR PANEL</h1>
+          <h1 style="text-align:center;">PANEL MODERATORA</h1>
             <h2 style="text-align:center;">{{ moderator_name }}</h2>
-          <p class="lead" style="text-align:center;">Lectures to moderate</p>
+          <p class="lead" style="text-align:center;">WYKŁADY DO MODERACJI:</p>
         </div>
       </div>
-    <h2>LECTURES</h2>
+    <h2>WYKŁADY</h2>
 <table id="lectures" class="table table-sm">
     <tr>
-        <th>Title</th>
-        <th>Start time</th>
-        <th>End time</th>
+        <th>Tytuł</th>
+        <th>Rozpoczęcie</th>
+        <th>Zakończenie</th>
         <th>Link</th>
     </tr>
     {%  for lecture in lectures %}
@@ -31,8 +31,8 @@
             <td>{{ lecture.end_time }}</td>
             <td>
                 <a href='{% url 'application:mod_panel_lecture' lecture_id=lecture.hash %}'>
-                  <button class="btn btn-success">
-                     DETAILS
+                  <button class="btn btn-info">
+                     SZCZEGÓŁY
                   </button>
                 </a>
             </td>
@@ -44,14 +44,14 @@
 </div>
 
 <div class="album pt-3 py-3">
-    <h2>CLOSED LECTURES</h2>
+    <h2>ZAMKNIĘTE WYKŁADY</h2>
 
 <table id="closed_lectures" class="table table-sm">
     <tr>
-        <th>Title</th>
-        <th>Start time</th>
-        <th>End time</th>
-        <th>Export</th>
+        <th>Tytuł</th>
+        <th>Rozpoczęcie</th>
+        <th>Zakończenie</th>
+        <th></th>
     </tr>
     {%  for lecture in closed_lectures %}
         <tr>
@@ -61,7 +61,7 @@
             <td>
                 <a href='{% url 'application:mod_export_lecture' lecture_id=lecture.hash %}'>
                   <button class="btn btn-success">
-                     EXPORT
+                     EKSPORT DO CSV
                   </button>
                 </a>
             </td>
