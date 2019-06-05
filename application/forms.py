@@ -17,16 +17,16 @@ class RegisterForm(forms.Form):
     def clean(self):
         username = self.cleaned_data['username']
         if User.objects.filter(username=username).exists():
-            raise ValidationError('Username already registered!')
+            raise ValidationError('Użytkownik o podanej nazwie już istnieje!')
         
         password = self.cleaned_data['password']
         password2 = self.cleaned_data['password2']
         
         if password != password2:
-            raise ValidationError('Passwords must be identical!')
+            raise ValidationError(u'Podane hasła się nie zgadzają!')
         
         if len(password) < 4:
-            raise ValidationError('Password is too short!')
+            raise ValidationError(u'Hasło jest za krótkie!')
         
         return self.cleaned_data
 
