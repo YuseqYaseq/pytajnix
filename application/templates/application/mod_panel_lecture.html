@@ -60,9 +60,9 @@
             var tags = data['tags'];
             console.log(data);
             document.querySelector('#questions').innerHTML +=
-                "<tr><td>" + question + "</td><td>" + tags + "</td><td class=\"vote\">0</td><td>" +
+                "<tr><td id=\"row-" + question_id + "\">" + question + "</td><td>" + tags + "</td><td class=\"vote\">0</td><td>" +
                 {#"<a href=\"" + url +"\">" +#}
-                "<button value=\"" + question_id + "\" class=\"btn btn-success approve\">APPROVE</button>" +
+                "<button value=\"" + question_id + "\" class=\"btn btn-success approve\">ZATWIERDŹ</button>" +
                 {#"</a>" +#}
                 "</td></tr>";
         } else if(data['type'] === 'msg_vote') {
